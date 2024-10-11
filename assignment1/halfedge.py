@@ -4,61 +4,54 @@ import gmsh
 import numpy as np 
 
 class TriangularMesh:
-    def __init__(self, vertices, triangles):
-        self.vertices = []
-        j = 0
-        for v in vertices :
-            self.vertices.append(Vertex(v[0],v[1],v[2],j,None))            
-            j = j+1
-            
+    def __init__(self, vertices, halfedges, triangules):
+        self.vertices = vertices
         self.faces = []
-        self.halfedges = []
-        edges = {}
+        self.halfedges = halfedges
+
         j = 0
-        index = 0
-        for t in triangles :
-            indices = [index, index+1, index + 2]
-            index = index + 3
-            for i in range (3) :
-                self.vertices[t[i]].halfedge = indices[i]
-                self.halfedges.append(Halfedge(indices[(i+1)%3], None, indices[(i+2)%3], t[i], j, indices[i]))
-                edges[(t[i], t[(i+1)%3])] = indices [i]
-            self.faces.append(Face(j,indices[0]))
-            j = j+1
-        for e,ind1 in edges.items() :
-            if (e[1],e[0]) in edges :
-                ind2 = edges[(e[1],e[0])]
-                self.halfedges[ind1].opposite = ind2
-                self.halfedges[ind2].opposite = ind1
+        for t in triangules:
+            self.faces.append(Face(j,t[0]))
+            j +=1
+    def __str__(self):
+        return f"TriangularMesh(\n\tvertices={[str(v) for v in self.vertices]},\n\n \tfaces={[str(face) for face in self.faces]},\n\n \thalfedges={[str(he) for he in self.halfedges]})"
 
 
             
 class Vertex:
-
     def __init__(self, x=0, y=0, z=0, index=None, halfedge=None):
         self.x = x
         self.y = y
         self.z = z
         self.index = index
         self.halfedge = halfedge
+    def __str__(self):
+        return f"Vertex({self.index}, x={self.x}, y={self.y})"
 
 class Face:
-
     def __init__(self, index=None, halfedge=None):
         self.index = index
-        # halfedge going ccw around this facet.
+        # halfedge going ccw around this face.
         self.halfedge = halfedge
+    def __str__(self):
+        return f"Face({self.index}, halfedge={self.halfedge})"
 
 class Halfedge:
-
     def __init__(self, next=None, opposite=None, prev=None, vertex=None,
-                 facet=None, index=None):
+                 face=None, index=None):
         self.opposite = opposite
         self.next = next
         self.prev = prev
         self.vertex = vertex
-        self.facet = facet
+        self.face = face
         self.index = index
+    def __str__(self):
+        next_idx = self.next.index if self.next else None
+        prev_idx = self.prev.index if self.prev else None
+        opp_idx = self.opposite.index if self.opposite else None
+        vert_idx = self.vertex.index if self.vertex else None
+        return (f"Halfedge({self.index}): vertex={vert_idx}, "
+                f"next={next_idx}, prev={prev_idx}, opposite={opp_idx}")
 
 
 if __name__ == '__main__':
