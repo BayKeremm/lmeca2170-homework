@@ -1,28 +1,28 @@
-import sys
-import math
-import gmsh
-import numpy as np 
-
 class TriangularMesh:
-    def __init__(self, vertices, halfedges, triangules):
+    def __init__(self, vertices, halfedges, triangles):
         self.vertices = vertices
         self.faces = []
         self.halfedges = halfedges
 
         j = 0
-        for t in triangules:
+        for t in triangles:
             self.faces.append(Face(j,t[0]))
             j +=1
     def __str__(self):
         return f"TriangularMesh(\n\tvertices={[str(v) for v in self.vertices]},\n\n \tfaces={[str(face) for face in self.faces]},\n\n \thalfedges={[str(he) for he in self.halfedges]})"
+    
+    def triangulate(self):
+        for vertex in self.vertices:
+            pass
+
+
 
 
             
 class Vertex:
-    def __init__(self, x=0, y=0, z=0, index=None, halfedge=None):
+    def __init__(self, x=0, y=0, index=None, halfedge=None):
         self.x = x
         self.y = y
-        self.z = z
         self.index = index
         self.halfedge = halfedge
     def __str__(self):

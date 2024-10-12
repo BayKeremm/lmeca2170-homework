@@ -20,3 +20,19 @@ The data looks like this:
 0.7325048474251682 0.044812945678031735  
 0.748532776190173 0.19307862118090735
 ```
+
+---
+
+### Thinking part
+```
+    def triangulate(self):
+        for vertex in self.vertices:
+            # What needs to be done here ? 
+```
+
+- So we need to one by one add the points, and in each addition re-triangulate
+    - This is the main idea of the incremental algorithm we have seen
+
+- There is also the notion of invalid Delaunay triangles when you add a points
+    - how is this decided (which primitives are needed here `incircle2d, orient2d`, are these all ?)
+    - what are the concrete steps when you find an invalid triangle ?

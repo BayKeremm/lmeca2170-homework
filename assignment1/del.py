@@ -1,6 +1,11 @@
 import sys
-from proj_utils import print_help, print_num_pts_error
+from proj_utils import * 
 from halfedge import *
+import sys
+import math
+import gmsh
+import numpy as np 
+
 
 
 if __name__== "__main__":
@@ -33,7 +38,7 @@ if __name__== "__main__":
     j = 0
     for pt in pts:
         l = pt.split()
-        vertices.append(Vertex(float(l[0]),float(l[0]),0.0,j,None))
+        vertices.append(Vertex(float(l[0]),float(l[1]),j,None))
         j +=1
 
     x_min = vertices[0].x
@@ -53,18 +58,18 @@ if __name__== "__main__":
 
     #print(f"x_min: {x_min}, y_min: {y_min}, x_max: {x_max}, y_max: {y_max}") 
 
-    x_min -= x_min*2
-    y_min -= y_min*2
+    x_min -= x_max
+    y_min -= y_max
 
-    y_max += y_max*2
-    x_max += x_max*2
+    y_max += y_max
+    x_max += x_max
 
     # these 4 new points make sure the convex hull contains 4 vertices
     # So we would end up with 2*n+2 traingles (n is the number of points)
-    x_n = Vertex(x_min, y_min, 0, j+1, None)
-    x_n1 = Vertex(x_max, y_min, 0, j+2, None)
-    x_n2 = Vertex(x_max, y_max, 0, j+3, None)
-    x_n3 = Vertex(x_min, y_max, 0, j+4, None)
+    x_n = Vertex(x_min, y_min, j, None)
+    x_n1 = Vertex(x_max, y_min, j+1, None)
+    x_n2 = Vertex(x_max, y_max, j+2, None)
+    x_n3 = Vertex(x_min, y_max, j+3, None)
 
     vertices.append(x_n)
     vertices.append(x_n1)
@@ -97,12 +102,12 @@ if __name__== "__main__":
     he6.next = he4
     he6.prev = he5
 
-    print(he1)
-    print(he2)
-    print(he3)
-    print(he4)
-    print(he5)
-    print(he6)
+#    print(he1)
+#    print(he2)
+#    print(he3)
+#    print(he4)
+#    print(he5)
+#    print(he6)
 
     halfedges = []
     halfedges.append(he1)
@@ -113,6 +118,9 @@ if __name__== "__main__":
     halfedges.append(he6)
     T = TriangularMesh(vertices,halfedges,[[he1,he2,he3],[he4,he5,he6]])
     print(T)
+
+    p = Printer(T)
+    p.print_mesh()
 
     fi.close()
     fo.close()
