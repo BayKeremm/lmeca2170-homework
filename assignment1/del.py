@@ -1,6 +1,7 @@
 import sys
 from proj_utils import * 
 from halfedge import *
+from triangularmesh import *
 import sys
 import math
 import gmsh
@@ -102,13 +103,6 @@ if __name__== "__main__":
     he6.next = he4
     he6.prev = he5
 
-#    print(he1)
-#    print(he2)
-#    print(he3)
-#    print(he4)
-#    print(he5)
-#    print(he6)
-
     halfedges = []
     halfedges.append(he1)
     halfedges.append(he2)
@@ -117,10 +111,15 @@ if __name__== "__main__":
     halfedges.append(he5)
     halfedges.append(he6)
     T = TriangularMesh(vertices,halfedges,[[he1,he2,he3],[he4,he5,he6]])
-    print(T)
 
-    p = Printer(T)
-    p.print_mesh()
+    T.triangulate() 
+    #print(T)
+
+    
+    
+    
+    #p = Printer(T)
+    #p.print_mesh()
 
     fi.close()
     fo.close()

@@ -1,24 +1,4 @@
-class TriangularMesh:
-    def __init__(self, vertices, halfedges, triangles):
-        self.vertices = vertices
-        self.faces = []
-        self.halfedges = halfedges
-
-        j = 0
-        for t in triangles:
-            self.faces.append(Face(j,t[0]))
-            j +=1
-    def __str__(self):
-        return f"TriangularMesh(\n\tvertices={[str(v) for v in self.vertices]},\n\n \tfaces={[str(face) for face in self.faces]},\n\n \thalfedges={[str(he) for he in self.halfedges]})"
-    
-    def triangulate(self):
-        for vertex in self.vertices:
-            pass
-
-
-
-
-            
+from geompreds import orient2d
 class Vertex:
     def __init__(self, x=0, y=0, index=None, halfedge=None):
         self.x = x
@@ -33,6 +13,25 @@ class Face:
         self.index = index
         # halfedge going ccw around this face.
         self.halfedge = halfedge
+    def inside(self, vertex):
+        # Since a face is a triangle we can get 3 halfedges that cover it
+        he1 = self.halfedge
+        he2 = he1.next
+        he3 = he1.prev
+
+        v1 = he1.vertex
+        v2 = he2.vertex
+        v3 = he3.vertex
+
+        r1 = orient2d((v1.x,v1.y),(v2.x,v2.y),(vertex.x,vertex.y))
+        r2 = orient2d((v2.x,v2.y),(v3.x,v3.y),(vertex.x,vertex.y))
+        r3 = orient2d((v3.x,v3.y),(v1.x,v1.y),(vertex.x,vertex.y))
+
+        # If all are the same sign, we are in the triangle
+        if (r1 >= 0 and r2 >= 0 and r3 >= 0) or (r1 <= 0 and r2 <= 0 and r3 <= 0):
+            return True
+        else:
+            return False
     def __str__(self):
         return f"Face({self.index}, halfedge={self.halfedge})"
 
