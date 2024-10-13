@@ -16,7 +16,7 @@ class Printer:
         self.vertices = tmesh.vertices
         self.faces = tmesh.faces
         self.halfedges = tmesh.halfedges
-    def print_mesh(self):
+    def print_mesh(self,title="Fig"):
         x = [v.x for v in self.vertices]
         y = [v.y for v in self.vertices]
         plt.scatter(x, y, color='blue')
@@ -46,7 +46,7 @@ class Printer:
 
         plt.xlabel('x')
         plt.ylabel('y')
-        plt.title('Triangular Mesh')
+        plt.title(title)
         plt.grid(True)
         plt.show()
 

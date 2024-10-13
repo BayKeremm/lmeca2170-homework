@@ -59,11 +59,17 @@ if __name__== "__main__":
 
     #print(f"x_min: {x_min}, y_min: {y_min}, x_max: {x_max}, y_max: {y_max}") 
 
-    x_min -= x_max
-    y_min -= y_max
+    #x_min -= x_max
+    #y_min -= y_max
 
-    y_max += y_max
-    x_max += x_max
+    #y_max += y_max
+    #x_max += x_max
+
+    x_min = -1
+    y_min = -1
+
+    y_max = 2
+    x_max = 2
 
     # these 4 new points make sure the convex hull contains 4 vertices
     # So we would end up with 2*n+2 traingles (n is the number of points)
@@ -79,29 +85,29 @@ if __name__== "__main__":
 
     # Manual creation of the two triangles that covers all the points in P
 
-    he1 = Halfedge(vertex=x_n2, index=1)
-    he2 = Halfedge(vertex=x_n, index=2)
-    he3 = Halfedge(vertex=x_n3, index=3)
-    he4 = Halfedge(vertex=x_n, index=4)
-    he5 = Halfedge(vertex=x_n2, index=5)
-    he6 = Halfedge(vertex=x_n1, index=6)
-
-
-    he1.next = he2
-    he1.prev = he3
-    he2.next = he3
-    he2.prev = he1
-    he3.next = he1
-    he3.prev = he2
+    he1 = Halfedge(vertex=x_n, index=1)
+    he2 = Halfedge(vertex=x_n2, index=2)
+    he3 = Halfedge(vertex=x_n1, index=3)
+    he4 = Halfedge(vertex=x_n2, index=4)
+    he5 = Halfedge(vertex=x_n, index=5)
+    he6 = Halfedge(vertex=x_n3, index=6)
 
     he1.opposite = he4
     he4.opposite = he1
+    he1.next = he2
+    he1.prev = he3
+    he1.next.next = he3
+    he1.next.prev = he1
+    he1.prev.prev = he2
+    he1.prev.next = he1
+
     he4.next = he5
     he4.prev = he6
-    he5.next = he6
-    he5.prev = he4
-    he6.next = he4
-    he6.prev = he5
+    he4.next.next = he6
+    he4.next.prev = he4
+    he4.prev.prev = he5
+    he4.prev.next = he4
+
 
     halfedges = []
     halfedges.append(he1)
@@ -110,16 +116,20 @@ if __name__== "__main__":
     halfedges.append(he4)
     halfedges.append(he5)
     halfedges.append(he6)
+
     T = TriangularMesh(vertices,halfedges,[[he1,he2,he3],[he4,he5,he6]])
 
+    p = Printer(T)
+    p.print_mesh()
+    T.set_printer(p)
+
+    T.edge_flip(he1)
+
     T.triangulate() 
-    #print(T)
 
     
     
     
-    #p = Printer(T)
-    #p.print_mesh()
 
     fi.close()
     fo.close()

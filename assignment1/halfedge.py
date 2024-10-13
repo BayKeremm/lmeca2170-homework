@@ -7,6 +7,8 @@ class Vertex:
         self.halfedge = halfedge
     def __str__(self):
         return f"Vertex({self.index}, x={self.x}, y={self.y})"
+    def as_tuple(self):
+        return (self.x,self.y)
 
 class Face:
     def __init__(self, index=None, halfedge=None):
@@ -28,8 +30,10 @@ class Face:
         r3 = orient2d((v3.x,v3.y),(v1.x,v1.y),(vertex.x,vertex.y))
 
         # If all are the same sign, we are in the triangle
-        if (r1 >= 0 and r2 >= 0 and r3 >= 0) or (r1 <= 0 and r2 <= 0 and r3 <= 0):
+        if (r1 > 0 and r2 > 0 and r3 > 0) or (r1 < 0 and r2 < 0 and r3 < 0):
             return True
+        elif (r1 == 0 and r2 == 0 and r3 == 0) or (r1 == 0 and r2 == 0 and r3 == 0):
+            return -1
         else:
             return False
     def __str__(self):
@@ -44,6 +48,7 @@ class Halfedge:
         self.vertex = vertex
         self.face = face
         self.index = index
+    
     def __str__(self):
         next_idx = self.next.index if self.next else None
         prev_idx = self.prev.index if self.prev else None
