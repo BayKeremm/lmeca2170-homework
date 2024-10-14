@@ -95,19 +95,12 @@ if __name__== "__main__":
     he1.opposite = he4
     he4.opposite = he1
     he1.next = he2
-    he1.prev = he3
-    he1.next.next = he3
-    he1.next.prev = he1
-    he1.prev.prev = he2
-    he1.prev.next = he1
+    he2.next = he3
+    he3.next = he1
 
-    he4.next = he5
-    he4.prev = he6
-    he4.next.next = he6
-    he4.next.prev = he4
-    he4.prev.prev = he5
-    he4.prev.next = he4
-
+    he4.next = he5 
+    he5.next = he6
+    he6.next = he4
 
     halfedges = []
     halfedges.append(he1)
@@ -118,18 +111,62 @@ if __name__== "__main__":
     halfedges.append(he6)
 
     T = TriangularMesh(vertices,halfedges,[[he1,he2,he3],[he4,he5,he6]])
+    # Since we know the convex hull
+    T.set_convex_hull_edges([he2,he3,he5,he6])
 
     p = Printer(T)
-    p.print_mesh()
     T.set_printer(p)
 
-    T.edge_flip(he1)
+    #p.print_mesh()
 
-    T.triangulate() 
+    T.triangulate()
 
+    # Remove initial triangulation, with 4 edges, we need to remove 4 triangles
+
+    T.faces.remove(he2.face)
+    T.halfedges.remove(he2)
+    T.halfedges.remove(he2.next)
+    T.halfedges.remove(he2.next.next)
+
+    T.faces.remove(he3.face)
+    T.halfedges.remove(he3)
+    T.halfedges.remove(he3.next)
+    T.halfedges.remove(he3.next.next)
+
+    T.faces.remove(he5.face)
+    T.halfedges.remove(he5)
+    T.halfedges.remove(he5.next)
+    T.halfedges.remove(he5.next.next)
+
+    T.faces.remove(he6.face)
+    T.halfedges.remove(he6)
+    T.halfedges.remove(he6.next)
+    T.halfedges.remove(he6.next.next)
+
+    to_remove = []
+    vs = [x_n,x_n1,x_n2,x_n3]
+    for h in T.halfedges:
+        if h.vertex in vs:
+            to_remove.append(h)
     
+    for h in to_remove:
+        T.faces.remove(h.face)
+        T.halfedges.remove(h)
+        T.halfedges.remove(h.next)
+        T.halfedges.remove(h.next.next)
     
-    
+    T.vertices.remove(x_n)
+    T.vertices.remove(x_n1)
+    T.vertices.remove(x_n2)
+    T.vertices.remove(x_n3)
+
+
+    T.compute_convex_hull()
+    p.plot_convexhull()
+    #p.print_mesh("Result of triangulation")
+
+
+
 
     fi.close()
     fo.close()
