@@ -6,8 +6,6 @@ class TriangularMesh:
         #return f"TriangularMesh(\n\tvertices={[str(v) for v in self.vertices]},\n\n \tfaces={[str(face) for face in self.faces]},\n\n \thalfedges={[str(he) for he in self.halfedges]})"
     def set_printer(self,p):
         self.printer = p 
-    def set_convex_hull_edges(self, halfedges):
-        self.convexhalfedges = halfedges
     def __init__(self, vertices, halfedges, triangles):
         self.vertices = vertices
         self.faces = []
@@ -44,10 +42,6 @@ class TriangularMesh:
         
         L_lower.remove(L_lower[0])
         L_lower.remove(L_lower[-1])
-        #print(color.YELLOW)
-        #print([str(v) for v in L_upper])
-        #print([str(v) for v in L_lower])
-        #print(color.END)
 
         self.convexhullvertices = L_upper + L_lower
     def edge_flip(self, he):
@@ -107,8 +101,6 @@ class TriangularMesh:
         return False
 
     def legalize_edge(self, pr, he):
-        if he in self.convexhalfedges:
-            return 
         if he.opposite == None:
             return
         he_next = he.next
@@ -204,3 +196,59 @@ class TriangularMesh:
     def resethalfedges(self):
         for he in self.halfedges:
             he.visited = False
+
+    #def mandatory_edge_flip(self, he):
+        #if he.opposite == None:
+            #he_up = he.next
+        #else:
+            #he_up = he
+        #v_1 = he_up.vertex  # This is the_up starting vertex of he_up
+        #v_2 = he_up.next.vertex  # The_up next vertex in he_up's triangle
+        #v_3 = he_up.next.next.vertex  # The_up last vertex in he_up's triangle
+
+        #v_4 = he_up.opposite.vertex  # The_up starting vertex of he_up.opposite
+        #v_5 = he_up.opposite.next.vertex  # The_up next vertex in he_up.opposite's triangle
+        #v_6 = he_up.opposite.next.next.vertex  # The_up last vertex in he_up.opposite's triangle
+
+        ## Ensure this is a valid edge for flipping: v2 == v4 and v1 == v5
+        #assert (v_2 == v_4 and v_1 == v_5), "WARNING: Not a valid edge for edge_flip"
+
+        ## Che_upck Delaunay condition using incircle test (commented res1 as it was unused)
+        ##res1 = incircle(v_1.as_tuple(), v_2.as_tuple(), v_3.as_tuple(), v_6.as_tuple())
+
+        ## Step 1: Cache_up the_up `next` pointers before modifying the_upm
+        #he_up_next = he_up.next
+        #he_up_next_next = he_up.next.next
+        #op_he_up_next = he_up.opposite.next
+        #op_he_up_next_next = he_up.opposite.next.next
+
+        ## Step 2: Reassign vertices for the_up halfedges
+        #he_up.vertex = v_6
+        #he_up.opposite.vertex = v_3
+
+        ## Step 3: Update the_up `next` pointers to reflect the_up new edge structure
+        ## Triangle 1 (around he_up)
+        #he_up.next = he_up_next_next  
+        #he_up.next.next = op_he_up_next  
+        #he_up.next.next.next = he_up
+
+        ## Triangle 2 (around he_up.opposite)
+        #he_up.opposite.next = op_he_up_next_next  
+        #he_up.opposite.next.next = he_up_next  
+        #he_up.opposite.next.next.next = he_up.opposite
+
+        ## Step 4: Update faces
+        #if he_up.face in self.faces:
+            #self.faces.remove(he_up.face)
+        #if he_up.opposite.face in self.faces:
+            #self.faces.remove(he_up.opposite.face)
+        #f1 = Face(len(self.faces),he_up)
+        #self.faces.append(f1)
+        #he_up.face = f1
+        #f2 = Face(len(self.faces),he_up.opposite)
+        #self.faces.append(f2)
+        #he_up.opposite.face = f2
+        #he_up.next.face = he_up.face
+        #he_up.next.next.face = he_up.face
+        #he_up.opposite.next.face = he_up.opposite.face
+        #he_up.opposite.next.next.face = he_up.opposite.face

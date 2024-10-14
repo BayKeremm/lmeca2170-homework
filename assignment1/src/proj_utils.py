@@ -67,14 +67,14 @@ class Printer:
 
                 if he.opposite is None:
                     pass
-                    #plt.text(midpoint_x, midpoint_y, f"he{he.index}\n→he{he.next.index}",
-                            #fontsize=8, color='purple', ha='center')
+                    plt.text(midpoint_x, midpoint_y, f"he{he.index}\n→he{he.next.index}",
+                            fontsize=8, color='purple', ha='center')
                 else:
                     he.opposite.visited = True
-                    #plt.text(midpoint_x -0.2, midpoint_y -0.2, f"he{he.index}\n→he{he.next.index}",
-                            #fontsize=8, color='purple', ha='center')
-                    #plt.text(midpoint_x , midpoint_y, f"he{he.opposite.index}\n→he{he.opposite.next.index}",
-                            #fontsize=8, color='purple', ha='center')
+                    plt.text(midpoint_x -0.2, midpoint_y -0.2, f"he{he.index}\n→he{he.next.index}",
+                            fontsize=8, color='purple', ha='center')
+                    plt.text(midpoint_x , midpoint_y, f"he{he.opposite.index}\n→he{he.opposite.next.index}",
+                            fontsize=8, color='purple', ha='center')
 
                 he.visited = True
 
