@@ -8,9 +8,11 @@
 #python ./src/genpts.py "$number" pts.dat
 
 # Run the Delaunay triangulation Python script
-python ./src/del.py -i pts.dat -o triangles.dat &
+python ./src/del.py -i pts.dat.alot -o triangles.Calc &
 
 # Run the test script
-python3 tests/del_test.py &
+python tests/del_test.py -i pts.dat.alot -o triangles.True &
 
 wait
+
+python tests/compare_files.py triangles.Calc triangles.True

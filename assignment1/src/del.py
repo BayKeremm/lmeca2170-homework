@@ -97,7 +97,6 @@ if __name__== "__main__":
     he1.next = he2
     he2.next = he3
     he3.next = he1
-
     he4.next = he5 
     he5.next = he6
     he6.next = he4
@@ -112,88 +111,99 @@ if __name__== "__main__":
 
     T = TriangularMesh(vertices,halfedges,[[he1,he2,he3],[he4,he5,he6]])
 
-    p = Printer(T)
-    T.set_printer(p)
-
-
     T.triangulate()
 
-    #p.print_mesh("Before removing manuals")
+    #T.print_mesh("Resulting triangulation")
 
-    # Remove initial triangulation, with 4 edges, we need to remove 4 triangles
+    triangles = T.export()
+    for tri in triangles:
+        triangle = [f"({pt[0]}, {pt[1]})" for pt in tri]
+        # Write the triangle to the output file
+        fo.write(" ".join(triangle) + "\n")
 
-    T.faces.remove(he2.face)
-    T.halfedges.remove(he2)
-    T.halfedges.remove(he2.next)
-    T.halfedges.remove(he2.next.next)
+    #T.faces.remove(he2.face)
+    #T.halfedges.remove(he2)
+    #T.halfedges.remove(he2.next)
+    #T.halfedges.remove(he2.next.next)
 
-    T.faces.remove(he3.face)
-    T.halfedges.remove(he3)
-    T.halfedges.remove(he3.next)
-    T.halfedges.remove(he3.next.next)
+    #T.faces.remove(he3.face)
+    #T.halfedges.remove(he3)
+    #T.halfedges.remove(he3.next)
+    #T.halfedges.remove(he3.next.next)
 
-    T.faces.remove(he5.face)
-    T.halfedges.remove(he5)
-    T.halfedges.remove(he5.next)
-    T.halfedges.remove(he5.next.next)
+    #T.faces.remove(he5.face)
+    #T.halfedges.remove(he5)
+    #T.halfedges.remove(he5.next)
+    #T.halfedges.remove(he5.next.next)
 
-    T.faces.remove(he6.face)
-    T.halfedges.remove(he6)
-    T.halfedges.remove(he6.next)
-    T.halfedges.remove(he6.next.next)
+    #T.faces.remove(he6.face)
+    #T.halfedges.remove(he6)
+    #T.halfedges.remove(he6.next)
+    #T.halfedges.remove(he6.next.next)
 
-    to_remove = []
-    vs = [x_n,x_n1,x_n2,x_n3]
-    for h in T.halfedges:
-        if h.vertex in vs:
-            to_remove.append(h)
+    #to_remove = []
+    #vs = [x_n,x_n1,x_n2,x_n3]
+    #for h in T.halfedges:
+        #if h.vertex in vs:
+            #to_remove.append(h)
 
-    for h in to_remove:
-        T.faces.remove(h.face)
-        T.halfedges.remove(h)
-        T.halfedges.remove(h.next)
-        T.halfedges.remove(h.next.next)
+    #for h in to_remove:
+        #T.faces.remove(h.face)
+        #T.halfedges.remove(h)
+        #T.halfedges.remove(h.next)
+        #T.halfedges.remove(h.next.next)
     
-    T.vertices.remove(x_n)
-    T.vertices.remove(x_n1)
-    T.vertices.remove(x_n2)
-    T.vertices.remove(x_n3)
+    #T.vertices.remove(x_n)
+    #T.vertices.remove(x_n1)
+    #T.vertices.remove(x_n2)
+    #T.vertices.remove(x_n3)
 
-    p.print_mesh("After removing manuals")
+    #T.print_mesh("Resulting triangulation")
+    #triangles = T.export()
+    #for tri in triangles:
+        #triangle = [f"({pt[0]}, {pt[1]})" for pt in tri]
+        ## Write the triangle to the output file
+        #fo.write(" ".join(triangle) + "\n")
+    #T.print_boundary()
 
-    T.compute_convex_hull()
-    p.plot_convexhull()
+    #T.print_mesh("Resulting triangulation")
 
-    boundary_hedges = []
-    for h in T.halfedges:
-        if h.opposite not in T.halfedges or h.opposite is None:
-            h.opposite = None
-            boundary_hedges.append(h)
+    #T.compute_convex_hull()
+    ##T.plot_convexhull()
 
-    boundary_points = [he.vertex.as_tuple() for he in boundary_hedges]
-    true_points = [v.as_tuple() for v in T.convexhullvertices]
+    #boundary_hedges = []
+    #for h in T.halfedges:
+        #if h.opposite is None:
+            #boundary_hedges.append(h)
 
-    true_x = [v.x for v in T.convexhullvertices]
-    true_y = [v.y for v in T.convexhullvertices]
+    #boundary_points = [he.vertex.as_tuple() for he in boundary_hedges]
+    #true_points = [v.as_tuple() for v in T.convexhullvertices]
 
-    plt.title("Orange point is extra in the triangulation, convex hull does not contain it")
-    plt.plot(true_x, true_y, 'x', label='Points')
+    #true_x = [v.x for v in T.convexhullvertices]
+    #true_y = [v.y for v in T.convexhullvertices]
 
-    non_convex_pts = []
-    for pt in boundary_points:
-        if pt not in true_points:
-            plt.plot(pt[0], pt[1], 'o', label='non true points')
-            non_convex_pts.append(pt)
+    ##plt.title("Orange point is extra in the triangulation, convex hull does not contain it")
+    ##plt.plot(true_x, true_y, 'x', label='Points')
+
+    #non_convex_pts = []
+    #for pt in boundary_points:
+        #if pt not in true_points:
+            #plt.plot(pt[0], pt[1], 'o', label='non true points')
+            #non_convex_pts.append(pt)
 
 
 
-    plt.show()
+    ##plt.show()
 
+    #illegals = []
     #for he in boundary_hedges:
-        #for pt in non_convex_pts:
-            #if he.vertex.as_tuple() == pt:
-                #if he.opposite == None:
-                    #new_he = Halfedge(vertex=Vertex(true_points))
+        #if he.vertex.as_tuple() not in T.convexhullvertices or he.next.vertex.as_tuple() not in T.convexhullvertices:
+            #illegals.append(he)
+    
+    
+
+
+        
 
 
 

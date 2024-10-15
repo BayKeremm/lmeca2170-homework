@@ -1,11 +1,9 @@
 from proj_utils import color
 from halfedge import *
 from geompreds import incircle
+import matplotlib.pyplot as plt
+import numpy as np
 class TriangularMesh:
-    #def __str__(self):
-        #return f"TriangularMesh(\n\tvertices={[str(v) for v in self.vertices]},\n\n \tfaces={[str(face) for face in self.faces]},\n\n \thalfedges={[str(he) for he in self.halfedges]})"
-    def set_printer(self,p):
-        self.printer = p 
     def __init__(self, vertices, halfedges, triangles):
         self.vertices = vertices
         self.faces = []
@@ -20,6 +18,12 @@ class TriangularMesh:
             t[1].face = f
             t[2].face = f
             j +=1
+    def export(self):
+        tris = []
+        for face in self.faces:
+            v1,v2,v3 = face.halfedge.vertex, face.halfedge.next.vertex, face.halfedge.next.next.vertex
+            tris.append([v1.as_tuple(),v2.as_tuple(), v3.as_tuple()])
+        return tris
     def compute_convex_hull(self):
         x_sorted = sorted(self.vertices, key=lambda v: v.x)
 
@@ -44,7 +48,7 @@ class TriangularMesh:
         L_lower.remove(L_lower[-1])
 
         self.convexhullvertices = L_upper + L_lower
-    def edge_flip(self, he):
+    def edge_flip(self, he, pr):
         v_1 = he.vertex  # This is the starting vertex of he
         v_2 = he.next.vertex  # The next vertex in he's triangle
         v_3 = he.next.next.vertex  # The last vertex in he's triangle
@@ -56,11 +60,11 @@ class TriangularMesh:
         # Ensure this is a valid edge for flipping: v2 == v4 and v1 == v5
         assert (v_2 == v_4 and v_1 == v_5), "WARNING: Not a valid edge for edge_flip"
 
-        # Check Delaunay condition using incircle test (commented res1 as it was unused)
-        #res1 = incircle(v_1.as_tuple(), v_2.as_tuple(), v_3.as_tuple(), v_6.as_tuple())
+        assert pr != v_6, "WARNING: pr =! v_6"
+        res1 = incircle(v_1.as_tuple(), v_2.as_tuple(), v_3.as_tuple(), v_6.as_tuple())
         res2 = incircle(v_1.as_tuple(), v_2.as_tuple(), v_6.as_tuple(), v_3.as_tuple())
 
-        if res2 > 0:
+        if res2 >= 0 :
             # Step 1: Cache the `next` pointers before modifying them
             he_next = he.next
             he_next_next = he.next.next
@@ -91,23 +95,32 @@ class TriangularMesh:
             f2 = Face(len(self.faces),he.opposite)
             self.faces.append(f2)
             he.opposite.face = f2
+
             he.next.face = he.face
             he.next.next.face = he.face
+
             he.opposite.next.face = he.opposite.face
             he.opposite.next.next.face = he.opposite.face
 
             return True
 
         return False
-
     def legalize_edge(self, pr, he):
         if he.opposite == None:
             return
         he_next = he.next
-        he_next_next = he.next
-        if self.edge_flip(he):
+        he_next_next = he.next.next
+        op = he.opposite
+        op_n = he.opposite.next
+        op_nn = he.opposite.next.next
+        if self.edge_flip(he, pr):
+            #for he in self.halfedges:
+                #self.legalize_edge(pr,he)
             self.legalize_edge(pr, he_next) 
             self.legalize_edge(pr, he_next_next) 
+            self.legalize_edge(pr, op) 
+            self.legalize_edge(pr, op_n) 
+            self.legalize_edge(pr, op_nn) 
 
     def triangulate(self):
         to_triangulate = self.vertices[:-4]
@@ -121,7 +134,8 @@ class TriangularMesh:
 
                     he = face.halfedge
                     init_he_next = he.next
-                    init_he_next_next = he.next.next
+                    init_he_next_next = init_he_next.next
+                    assert init_he_next_next.next == he, print("Not a triangle homie")
                     he1 = Halfedge(vertex=(he.next.vertex),index=len(self.halfedges))
                     self.halfedges.append(he1)
 
@@ -182,11 +196,13 @@ class TriangularMesh:
                     he4.opposite = he5
                     he5.opposite = he4
 
-                    #self.printer.print_mesh("After adding new edges")
+                    #self.print_mesh("Before legalizing he", highlight=he)
                     self.legalize_edge(vertex, he)
+                    #self.print_mesh("Before legalizing init_he_next", highlight=init_he_next)
                     self.legalize_edge(vertex,init_he_next)
+                    #self.print_mesh("Before legalizing he next next ", highlight=init_he_next_next)
                     self.legalize_edge(vertex,init_he_next_next)
-                    #self.printer.print_mesh("After legalizing")
+                    #self.print_mesh("After legalizing")
 
 
                 elif res == -1:
@@ -196,6 +212,161 @@ class TriangularMesh:
     def resethalfedges(self):
         for he in self.halfedges:
             he.visited = False
+    def plot_convexhull(self):
+        if len(self.convexhullvertices) == 0:
+            return 
+        # Plotting the original points and the convex hull
+        plt.figure()
+        # Original points
+        plt.plot([v.x for v in self.vertices], [v.y for v in self.vertices], 'o', label='Points')
+
+        # Convex hull
+        hull_x = [v.x for v in self.convexhullvertices] + [self.convexhullvertices[0].x]  # closing the polygon
+        hull_y = [v.y for v in self.convexhullvertices] + [self.convexhullvertices[0].y]  # closing the polygon
+        plt.plot(hull_x, hull_y, 'r-', label='Convex Hull')
+
+        plt.title("Convex Hull")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.gca().set_aspect('equal', adjustable='box')
+        plt.legend()
+        plt.show()
+
+    def print_mesh(self, title="Fig", highlight=None):
+        x = [v.x for v in self.vertices]
+        y = [v.y for v in self.vertices]
+        
+        # Plot vertices
+        plt.scatter(x, y, color='blue')
+        for v in self.vertices:
+            plt.text(v.x, v.y, str(v.index), fontsize=12, color='red', ha='center', va='center')
+
+        # Plot faces and halfedges
+        for face in self.faces:
+            he = face.halfedge
+            triangle_x = []
+            triangle_y = []
+            start_he = he
+
+            while True:
+                vertex = he.vertex
+                next_vertex = he.next.vertex
+                triangle_x.append(vertex.x)
+                triangle_y.append(vertex.y)
+
+                midpoint_x = (vertex.x + next_vertex.x) / 2
+                midpoint_y = (vertex.y + next_vertex.y) / 2
+
+                if he.visited:
+                    he = he.next
+                    if he == start_he:
+                        break
+                    continue
+
+                if he.opposite is None:
+                    pass
+                    #plt.text(midpoint_x, midpoint_y, f"he{he.index}\n→he{he.next.index}",
+                            #fontsize=8, color='orange', ha='center')
+                else:
+                    he.opposite.visited = True
+                    #plt.text(midpoint_x -0.2, midpoint_y -0.2, f"he{he.index}\n→he{he.next.index}",
+                            #fontsize=8, color='purple', ha='center')
+                    #plt.text(midpoint_x , midpoint_y, f"he{he.opposite.index}\n→he{he.opposite.next.index}",
+                            #fontsize=8, color='purple', ha='center')
+
+                he.visited = True
+
+
+
+                he = he.next
+                if he == start_he:
+                    break
+
+            # Close the triangle by adding the first point again
+            triangle_x.append(triangle_x[0])
+            triangle_y.append(triangle_y[0])
+            plt.plot(triangle_x, triangle_y, color='black')
+
+        # Plot configuration
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(title)
+        plt.grid(True)
+        plt.show()
+        self.resethalfedges()
+    def print_boundary(self):
+        x = [v.x for v in self.vertices]
+        y = [v.y for v in self.vertices]
+        
+        # Plot vertices
+        plt.scatter(x, y, color='blue')
+        for v in self.vertices:
+            plt.text(v.x, v.y, str(v.index), fontsize=12, color='red', ha='center', va='center')
+
+        # Plot faces and halfedges
+        for face in self.faces:
+            he = face.halfedge
+            triangle_x = []
+            triangle_y = []
+            start_he = he
+
+            while True:
+                vertex = he.vertex
+                next_vertex = he.next.vertex
+                triangle_x.append(vertex.x)
+                triangle_y.append(vertex.y)
+
+                midpoint_x = (vertex.x + next_vertex.x) / 2
+                midpoint_y = (vertex.y + next_vertex.y) / 2
+
+                if he.visited:
+                    he = he.next
+                    if he == start_he:
+                        break
+                    continue
+
+                if he.opposite is None:
+                    pass
+                    #plt.text(midpoint_x, midpoint_y, f"he{he.index}\n→he{he.next.index}",
+                            #fontsize=8, color='orange', ha='center')
+                else:
+                    he.opposite.visited = True
+                    #plt.text(midpoint_x -0.2, midpoint_y -0.2, f"he{he.index}\n→he{he.next.index}",
+                            #fontsize=8, color='purple', ha='center')
+                    #plt.text(midpoint_x , midpoint_y, f"he{he.opposite.index}\n→he{he.opposite.next.index}",
+                            #fontsize=8, color='purple', ha='center')
+
+                he.visited = True
+
+
+
+                he = he.next
+                if he == start_he:
+                    break
+
+            # Close the triangle by adding the first point again
+            triangle_x.append(triangle_x[0])
+            triangle_y.append(triangle_y[0])
+            plt.plot(triangle_x, triangle_y, color='black')
+
+        to_plot = []
+        for he in self.halfedges:
+            if he.opposite is None:
+                to_plot.append(he)
+        
+        xs = [h.vertex.x for h in to_plot]
+        ys = [h.vertex.y for h in to_plot]
+
+        plt.scatter(xs, ys, color='orange')
+
+        plt.title("Boundary")
+        plt.xlabel("x")
+        plt.ylabel("y")
+        plt.show()
+
+
+
+
 
     #def mandatory_edge_flip(self, he):
         #if he.opposite == None:
