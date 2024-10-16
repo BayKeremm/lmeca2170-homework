@@ -18,12 +18,15 @@ class TriangularMesh:
             t[1].face = f
             t[2].face = f
             j +=1
-    def export(self):
+    def export(self,file):
         tris = []
         for face in self.faces:
             v1,v2,v3 = face.halfedge.vertex, face.halfedge.next.vertex, face.halfedge.next.next.vertex
             tris.append([v1.as_tuple(),v2.as_tuple(), v3.as_tuple()])
-        return tris
+        for tri in tris:
+            triangle = [f"({pt[0]}, {pt[1]})" for pt in tri]
+            # Write the triangle to the output file
+            file.write(" ".join(triangle) + "\n")
     def compute_convex_hull(self):
         x_sorted = sorted(self.vertices, key=lambda v: v.x)
 
@@ -48,6 +51,76 @@ class TriangularMesh:
         L_lower.remove(L_lower[-1])
 
         self.convexhullvertices = L_upper + L_lower
+    def special_flip(self, he, boundary_vertices):
+        v_1 = he.vertex  
+        v_2 = he.next.vertex  
+        v_3 = he.next.next.vertex 
+
+        v_4 = he.opposite.vertex 
+        v_5 = he.opposite.next.vertex 
+        v_6 = he.opposite.next.next.vertex 
+
+        assert (v_2 == v_4 and v_1 == v_5), "WARNING: Not a valid edge for special_flip"
+        
+        assert v_1 in boundary_vertices, "v_1 not correct"
+
+        
+        #for i in boundary_vertices:
+            #if i == v_1:
+                #pt = v_1.as_tuple()
+                #break
+        
+        #if pt == (-1,2):
+            #res = orient2d(v_3.as_tuple(), v_2.as_tuple(), v_6.as_tuple())
+        #elif pt == (-1,-1):
+            #pass
+        #elif pt == (2,-1):
+            #pass
+        #elif pt == (2,2):
+            #pass
+
+
+        # If v_3 v_2 v_6 make a left hand turn flip
+        res = orient2d(v_3.as_tuple(), v_2.as_tuple(), v_6.as_tuple())
+
+        if res > 0:
+            # Step 1: Cache the `next` pointers before modifying them
+            he_next = he.next
+            he_next_next = he.next.next
+            op_he_next = he.opposite.next
+            op_he_next_next = he.opposite.next.next
+
+            # Step 2: Reassign vertices for the halfedges
+            he.vertex = v_6
+            he.opposite.vertex = v_3
+
+            # Step 3: Update the `next` pointers to reflect the new edge structure
+            # Triangle 1 (around he)
+            he.next = he_next_next  
+            he.next.next = op_he_next  
+            he.next.next.next = he
+
+            # Triangle 2 (around he.opposite)
+            he.opposite.next = op_he_next_next  
+            he.opposite.next.next = he_next  
+            he.opposite.next.next.next = he.opposite
+
+            # Step 4: Update faces
+            self.faces.remove(he.face)
+            self.faces.remove(he.opposite.face)
+            f1 = Face(len(self.faces),he)
+            self.faces.append(f1)
+            he.face = f1
+            f2 = Face(len(self.faces),he.opposite)
+            self.faces.append(f2)
+            he.opposite.face = f2
+
+            he.next.face = he.face
+            he.next.next.face = he.face
+
+            he.opposite.next.face = he.opposite.face
+            he.opposite.next.next.face = he.opposite.face
+
     def edge_flip(self, he, pr):
         v_1 = he.vertex  # This is the starting vertex of he
         v_2 = he.next.vertex  # The next vertex in he's triangle

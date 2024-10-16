@@ -42,29 +42,6 @@ if __name__== "__main__":
         vertices.append(Vertex(float(l[0]),float(l[1]),j,None))
         j +=1
 
-    x_min = vertices[0].x
-    y_min = vertices[0].y
-    x_max = vertices[0].x
-    y_max = vertices[0].y
-
-    for vertex in vertices:
-        if vertex.x < x_min:
-            x_min = vertex.x
-        if vertex.x > x_max:
-            x_max = vertex.x
-        if vertex.y < y_min:
-            y_min = vertex.y
-        if vertex.y > y_max:
-            y_max = vertex.y
-
-    #print(f"x_min: {x_min}, y_min: {y_min}, x_max: {x_max}, y_max: {y_max}") 
-
-    #x_min -= x_max
-    #y_min -= y_max
-
-    #y_max += y_max
-    #x_max += x_max
-
     x_min = -1
     y_min = -1
 
@@ -109,17 +86,75 @@ if __name__== "__main__":
     halfedges.append(he5)
     halfedges.append(he6)
 
+
     T = TriangularMesh(vertices,halfedges,[[he1,he2,he3],[he4,he5,he6]])
 
     T.triangulate()
 
-    #T.print_mesh("Resulting triangulation")
+    T.print_mesh("RESULT triangulation")
+    boundary_hes = [he2,he3,he5,he6]
+    boundary_vs = [x_n, x_n1, x_n2, x_n3]
 
-    triangles = T.export()
-    for tri in triangles:
-        triangle = [f"({pt[0]}, {pt[1]})" for pt in tri]
-        # Write the triangle to the output file
-        fo.write(" ".join(triangle) + "\n")
+    for he in boundary_hes:
+        T.faces.remove(he.face)
+        T.halfedges.remove(he)
+        T.halfedges.remove(he.next)
+        he.next.opposite.opposite = None
+        T.halfedges.remove(he.next.next)
+        he.next.next.opposite.opposite = None
+        
+    
+    to_remove = []
+    for he in T.halfedges:
+        if he.vertex in boundary_vs:
+            to_remove.append(he)
+
+    #print("\n".join(str(h)+" opposite: "+str(h.opposite) for h in to_remove))
+
+    #T.print_mesh("RESULT before special flip")
+
+    for he in to_remove:
+        if he.opposite is not None:
+            T.special_flip(he, boundary_vs)
+
+    #T.print_mesh("RESULT special flip")
+
+    for he in T.halfedges:
+        if he.vertex in boundary_vs:
+            T.faces.remove(he.face)
+            T.halfedges.remove(he)
+            T.halfedges.remove(he.next)
+            T.halfedges.remove(he.next.next)
+            #if he.opposite is not None:
+                #T.faces.remove(he.opposite.face)
+                #T.halfedges.remove(he.opposite)
+                #T.halfedges.remove(he.opposite.next)
+                #T.halfedges.remove(he.opposite.next.next)
+
+    T.print_mesh("RESULT")
+
+    for f in T.faces:
+        p = False
+        if f.halfedge.vertex.index == 22:
+            p = True
+        elif f.halfedge.next.vertex.index == 22:
+            p = True
+        elif f.halfedge.next.next.vertex.index == 22:
+            p = True
+
+        
+
+        if p:
+            print(f)
+            print('\t - ' + str(f.halfedge))
+            print('\t - ' + str(f.halfedge.next))
+            print('\t - ' + str(f.halfedge.next.next))
+
+    for v in boundary_vs:
+        T.vertices.remove(v)
+    
+
+    #triangles = T.export(fo)
 
     #T.faces.remove(he2.face)
     #T.halfedges.remove(he2)

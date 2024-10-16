@@ -15,7 +15,8 @@ with open(input_file, "r") as fi:
     pts = lines[1:]
 
 # Define boundary points and append the additional points
-points = [[-1, -1], [-1, 2], [2, -1], [2, 2]]
+#points = [[-1, -1], [-1, 2], [2, -1], [2, 2]]
+points = []
 
 for pt in pts:
     l = pt.split()
