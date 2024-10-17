@@ -6,6 +6,7 @@ __pycache__/
 
 # C extensions
 *.so
+pts.dat.alot
 
 # Distribution / packaging
 .Python
