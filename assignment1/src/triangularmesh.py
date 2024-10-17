@@ -4,11 +4,12 @@ from geompreds import incircle
 import matplotlib.pyplot as plt
 import numpy as np
 class TriangularMesh:
-    def __init__(self, vertices, halfedges, triangles):
+    def __init__(self, vertices, halfedges, triangles,debug):
         self.vertices = vertices
         self.faces = []
         self.halfedges = halfedges
         self.convexhullvertices = []
+        self.debug = debug
 
         j = 0
         for t in triangles:
@@ -51,44 +52,44 @@ class TriangularMesh:
         L_lower.remove(L_lower[-1])
 
         self.convexhullvertices = L_upper + L_lower
-    def handle_boundaries(self, boundary_hes):
-        TODO()
-        faces_to_remove = []
-        halfedges_to_remove = []
-        faces_to_add = []
+    def handle_boundaries(self, boundary_hes, boundary_vs):
         for he in boundary_hes:
-            v_1 = he.vertex
-            v_2 = he.next.vertex
-            v_3 = he.next.next.vertex
+            self.faces.remove(he.face)
+            self.halfedges.remove(he)
+            self.halfedges.remove(he.next)
+            he.next.opposite.opposite = None
+            self.halfedges.remove(he.next.next)
+            he.next.next.opposite.opposite = None
+        
+        to_remove = []
+        for he in self.halfedges:
+            if he.vertex in boundary_vs:
+                to_remove.append(he)
 
-            v_4 = he.next.opposite.vertex # v_3
-            v_5 = he.next.next.opposite.vertex # v_1
+        for he in to_remove:
+            if he.opposite is not None:
+                self.special_flip(he, boundary_vs)
 
-            assert v_4 == v_3 and v_5 == v_1, "Setup does not match expected in handle boundaries"
+        if self.debug:
+            self.print_mesh("After special flip")
 
-            v_6 = he.next.opposite.next.next.vertex
-            v_7 = he.next.next.opposite.next.next.vertex
 
-            res = orient2d(v_6.as_tuple(), v_3.as_tuple(), v_7.as_tuple())
-            if res < 0:
-                faces_to_remove.extend([he.face, he.next.opposite.face, he.next.next.opposite.face])
-                new_he = Halfedge(vertex=v_7,index=len(self.vertices))
-                new_face = Face(index=len(self.faces),halfedge=new_he)
-                new_he.next = he.next.opposite.next.next.next
-                he.next.opposite.next.next.next = he.next.next.opposite.next
-                he.next.next.opposite.next.next = new_he
-                new_he.face = new_face
-                new_he.next.face = new_face
-                new_he.next.next.face = new_face
-                faces_to_add.append(new_face)
-            else:
-                faces_to_remove.append(he.face)
-                halfedges_to_remove.append(he)
-        for f in faces_to_remove:
-            self.faces.remove(f)
-        for f in faces_to_add:
-            self.faces.append(f)
-            self.halfedges.append(f.halfedge)
+        to_remove = []
+        for he in self.halfedges:
+            if he.vertex in boundary_vs:
+                to_remove.append(he)
+                to_remove.append(he.next)
+                to_remove.append(he.next.next)
+                self.faces.remove(he.face)
+
+        # Now remove them
+        for he in to_remove:
+            if he in self.halfedges:
+                self.halfedges.remove(he)
+
+        for v in boundary_vs:
+            self.vertices.remove(v)
+
     def special_flip(self, he, boundary_vertices):
 
         v_1 = he.vertex  
@@ -101,7 +102,7 @@ class TriangularMesh:
 
         assert (v_2 == v_4 and v_1 == v_5), "WARNING: Not a valid edge for special_flip"
         
-        assert v_1 in boundary_vertices, "v_1 not correct"
+        #assert v_1 in boundary_vertices, "v_1 not correct"
 
         
         #for i in boundary_vertices:
@@ -159,6 +160,8 @@ class TriangularMesh:
 
             he.opposite.next.face = he.opposite.face
             he.opposite.next.next.face = he.opposite.face
+            return True
+        return False
 
     def edge_flip(self, he, pr):
         v_1 = he.vertex  # This is the starting vertex of he
