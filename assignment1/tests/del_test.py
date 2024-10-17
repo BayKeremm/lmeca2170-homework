@@ -23,6 +23,7 @@ with open(input_file, "r") as fi:
 
 # Define boundary points and append the additional points
 if INF:
+    this_is_wrong()
     points = [[-1, -1], [-1, 2], [2, -1], [2, 2]]
 else:
     points = []
