@@ -51,7 +51,46 @@ class TriangularMesh:
         L_lower.remove(L_lower[-1])
 
         self.convexhullvertices = L_upper + L_lower
+    def handle_boundaries(self, boundary_hes):
+        TODO()
+        faces_to_remove = []
+        halfedges_to_remove = []
+        faces_to_add = []
+        for he in boundary_hes:
+            v_1 = he.vertex
+            v_2 = he.next.vertex
+            v_3 = he.next.next.vertex
+
+            v_4 = he.next.opposite.vertex # v_3
+            v_5 = he.next.next.opposite.vertex # v_1
+
+            assert v_4 == v_3 and v_5 == v_1, "Setup does not match expected in handle boundaries"
+
+            v_6 = he.next.opposite.next.next.vertex
+            v_7 = he.next.next.opposite.next.next.vertex
+
+            res = orient2d(v_6.as_tuple(), v_3.as_tuple(), v_7.as_tuple())
+            if res < 0:
+                faces_to_remove.extend([he.face, he.next.opposite.face, he.next.next.opposite.face])
+                new_he = Halfedge(vertex=v_7,index=len(self.vertices))
+                new_face = Face(index=len(self.faces),halfedge=new_he)
+                new_he.next = he.next.opposite.next.next.next
+                he.next.opposite.next.next.next = he.next.next.opposite.next
+                he.next.next.opposite.next.next = new_he
+                new_he.face = new_face
+                new_he.next.face = new_face
+                new_he.next.next.face = new_face
+                faces_to_add.append(new_face)
+            else:
+                faces_to_remove.append(he.face)
+                halfedges_to_remove.append(he)
+        for f in faces_to_remove:
+            self.faces.remove(f)
+        for f in faces_to_add:
+            self.faces.append(f)
+            self.halfedges.append(f.halfedge)
     def special_flip(self, he, boundary_vertices):
+
         v_1 = he.vertex  
         v_2 = he.next.vertex  
         v_3 = he.next.next.vertex 

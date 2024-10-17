@@ -20,8 +20,8 @@ def compare_triangles(file1, file2):
     triangles1 = read_triangles_from_file(file1)
     triangles2 = read_triangles_from_file(file2)
 
-    assert len(triangles1) == len(triangles2), print( "Do not match, different number of triangulations")
-    assert triangles1 == triangles2, print( "Do not match, different triangles present")
+    assert len(triangles1) == len(triangles2), "Do not match, different number of triangulations"
+    assert triangles1 == triangles2,  "Do not match, different triangles present"
     print("The same triangulation. Good! ")
 if len(sys.argv) != 3:
     print("Usage: python compare_triangles.py <file1> <file2>")

@@ -8,10 +8,10 @@
 #python ./src/genpts.py "$number" pts.dat
 
 # Run the Delaunay triangulation Python script
-python ./src/del.py -i pts.dat.alot -o triangles.Calc &
+python ./src/del.py -i pts.dat.10k -o triangles.Calc &
 
 # Run the test script
-python tests/del_test.py -i pts.dat.alot -o triangles.True &
+python tests/del_test.py -i pts.dat.10k -o triangles.True &
 
 wait
 
