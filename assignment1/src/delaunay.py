@@ -35,7 +35,6 @@ if __name__== "__main__":
     except:
         pass
 
-
     fi = open(input_file,"r")
     fo = open(output_file,"w")
 
@@ -53,18 +52,27 @@ if __name__== "__main__":
         vertices.append(Vertex(float(l[0]),float(l[1]),j,None))
         j +=1
 
-    x_min = -1
-    y_min = -1
+    x_min = y_min = float('inf')
+    x_max = y_max = float('-inf')
 
-    y_max = 2
-    x_max = 2
+    for vertex in vertices:
+        x_min = min(x_min, vertex.x)
+        y_min = min(y_min, vertex.y)
+        x_max = max(x_max, vertex.x)
+        y_max = max(y_max, vertex.y)
 
-    x_n = Vertex(x_min, y_min, j, None)
-    x_n1 = Vertex(x_max, y_min, j+1, None)
-    x_n2 = Vertex(x_max, y_max, j+2, None)
-    x_n3 = Vertex(x_min, y_max, j+3, None)
+    dx = (x_max - x_min)
+    dy = (y_max - y_min)
+
+    scale_factor = 1000
+
+    x_n = Vertex(x_min - dx * scale_factor, y_min - dy * scale_factor, j, None)
+    x_n1 = Vertex(x_max + dx * scale_factor, y_min - dy * scale_factor, j+1, None)
+    x_n2 = Vertex(x_max + dx * scale_factor, y_max + dy * scale_factor, j+2, None)
+    x_n3 = Vertex(x_min - dx * scale_factor, y_max + dy * scale_factor, j+3, None)
 
     vertices.extend([x_n, x_n1, x_n2, x_n3])
+
 
     # Manual creation of the two triangles that covers all the points in P
 
