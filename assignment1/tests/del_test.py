@@ -12,8 +12,11 @@ output_file = sys.argv[idx_output+1]
 idx_deb = sys.argv.index("-DEBUG")
 DEBUG = int(sys.argv[idx_deb+1])
 
-idx_inf = sys.argv.index("-INF")
-INF = int(sys.argv[idx_inf+1])
+idx_inf = sys.argv.index("-REMOVEINF")
+REMOVEINF = int(sys.argv[idx_inf+1])
+
+idx_exp = sys.argv.index("-EXPORT")
+EXPORT = int(sys.argv[idx_inf+1])
 
 # Read points from input file
 with open(input_file, "r") as fi:
@@ -22,9 +25,27 @@ with open(input_file, "r") as fi:
     pts = lines[1:]
 
 # Define boundary points and append the additional points
-if INF:
-    this_is_wrong()
-    points = [[-1, -1], [-1, 2], [2, -1], [2, 2]]
+if not REMOVEINF:
+    x_min = y_min = float('inf')
+    x_max = y_max = float('-inf')
+
+    for pt in pts:
+        l = pt.split()
+        x_min = min(x_min, float(l[0]))
+        y_min = min(y_min, float(l[1]))
+        x_max = max(x_max, float(l[0]))
+        y_max = max(y_max, float(l[1]))
+
+    dx = (x_max - x_min)
+    dy = (y_max - y_min)
+
+    scale_factor = 1000
+
+    x_n = [x_min - dx * scale_factor, y_min - dy * scale_factor]
+    x_n1 =[x_max + dx * scale_factor, y_min - dy * scale_factor]
+    x_n2 =[x_max + dx * scale_factor, y_max + dy * scale_factor]
+    x_n3 =[x_min - dx * scale_factor, y_max + dy * scale_factor]
+    points = [x_n, x_n1, x_n2, x_n3]
 else:
     points = []
 
@@ -46,7 +67,7 @@ if DEBUG:
     plt.ylabel("y")
     plt.gca().set_aspect('equal', adjustable='box')
     plt.show()
-else:
+elif EXPORT:
     # Open output file for writing triangles
     with open(output_file, "w") as fo:
         for simplex in tri.simplices:

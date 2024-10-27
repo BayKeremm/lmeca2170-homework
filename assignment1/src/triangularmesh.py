@@ -28,6 +28,7 @@ class TriangularMesh:
             triangle = [f"({pt[0]}, {pt[1]})" for pt in tri]
             # Write the triangle to the output file
             file.write(" ".join(triangle) + "\n")
+
     def compute_convex_hull(self):
         x_sorted = sorted(self.vertices, key=lambda v: v.x)
 
@@ -102,23 +103,7 @@ class TriangularMesh:
 
         assert (v_2 == v_4 and v_1 == v_5), "WARNING: Not a valid edge for special_flip"
         
-        #assert v_1 in boundary_vertices, "v_1 not correct"
-
-        
-        #for i in boundary_vertices:
-            #if i == v_1:
-                #pt = v_1.as_tuple()
-                #break
-        
-        #if pt == (-1,2):
-            #res = orient2d(v_3.as_tuple(), v_2.as_tuple(), v_6.as_tuple())
-        #elif pt == (-1,-1):
-            #pass
-        #elif pt == (2,-1):
-            #pass
-        #elif pt == (2,2):
-            #pass
-
+        assert v_1 in boundary_vertices, "v_1 not correct"
 
         # If v_3 v_2 v_6 make a left hand turn flip
         res = orient2d(v_3.as_tuple(), v_2.as_tuple(), v_6.as_tuple())
@@ -176,10 +161,9 @@ class TriangularMesh:
         assert (v_2 == v_4 and v_1 == v_5), "WARNING: Not a valid edge for edge_flip"
 
         assert pr != v_6, "WARNING: pr =! v_6"
-        res1 = incircle(v_1.as_tuple(), v_2.as_tuple(), v_3.as_tuple(), v_6.as_tuple())
-        res2 = incircle(v_1.as_tuple(), v_2.as_tuple(), v_6.as_tuple(), v_3.as_tuple())
+        res = incircle(v_1.as_tuple(), v_2.as_tuple(), v_6.as_tuple(), v_3.as_tuple())
 
-        if res2 >= 0 :
+        if res >= 0 :
             # Step 1: Cache the `next` pointers before modifying them
             he_next = he.next
             he_next_next = he.next.next
@@ -229,8 +213,6 @@ class TriangularMesh:
         op_n = he.opposite.next
         op_nn = he.opposite.next.next
         if self.edge_flip(he, pr):
-            #for he in self.halfedges:
-                #self.legalize_edge(pr,he)
             self.legalize_edge(pr, he_next) 
             self.legalize_edge(pr, he_next_next) 
             self.legalize_edge(pr, op) 
