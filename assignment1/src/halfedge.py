@@ -16,6 +16,13 @@ class Face:
         # halfedge going ccw around this face.
         self.halfedge = halfedge
     def inside(self, vertex):
+        def on_segment(v1,v2,v3):
+            c1 = min(v1.x, v2.x) <= v3.x
+            c2 = max(v1.x, v2.x) >= v3.x
+
+            c3 = min(v1.y, v2.y) <= v3.y
+            c4 = max(v1.y, v2.y) >= v3.y
+            return c1 and c2 and c3 and c4
         # Since a face is a triangle we can get 3 halfedges that cover it
         he1 = self.halfedge
         he2 = he1.next
@@ -32,7 +39,9 @@ class Face:
         # If all are the same sign, we are in the triangle
         if (r1 > 0 and r2 > 0 and r3 > 0) or (r1 < 0 and r2 < 0 and r3 < 0):
             return True
-        elif (r1 == 0 and r2 == 0 and r3 == 0) or (r1 == 0 and r2 == 0 and r3 == 0):
+        elif ((r1 == 0 and on_segment(v1,v2,vertex)) 
+              or (r2 == 0 and on_segment(v2,v3,vertex)) 
+              or (r3 == 0 and on_segment(v3,v1,vertex))):
             return -1
         else:
             return False

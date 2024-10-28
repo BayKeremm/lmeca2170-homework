@@ -16,7 +16,7 @@ idx_inf = sys.argv.index("-REMOVEINF")
 REMOVEINF = int(sys.argv[idx_inf+1])
 
 idx_exp = sys.argv.index("-EXPORT")
-EXPORT = int(sys.argv[idx_inf+1])
+EXPORT = int(sys.argv[idx_exp+1])
 
 # Read points from input file
 with open(input_file, "r") as fi:
@@ -56,7 +56,6 @@ for pt in pts:
 # Perform Delaunay triangulation
 points = np.array(points)
 tri = Delaunay(points)
-
 
 
 if DEBUG:

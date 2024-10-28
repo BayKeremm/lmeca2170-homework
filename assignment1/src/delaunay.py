@@ -74,11 +74,17 @@ if __name__== "__main__":
         if int(inf)==1:
             REMOVEINF = True
         idx_exp = sys.argv.index("-EXPORT")
-        exp = sys.argv[idx_inf+1]
+        exp = sys.argv[idx_exp+1]
         if int(exp)==1:
             EXP = True
     except:
-        pass
+        print("DAFUQ")
+
+    #print("------------")
+    #print(DEBUG)
+    #print(EXP)
+    #print(REMOVEINF)
+    #print("------------")
 
     fi = open(input_file,"r")
     fo = open(output_file,"w")
