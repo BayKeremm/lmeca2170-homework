@@ -18,7 +18,7 @@ def create_initial_triangulation(vertices):
     dx = (x_max - x_min)
     dy = (y_max - y_min)
 
-    scale_factor = 1000
+    scale_factor = 2000
 
     x_n = Vertex(x_min - dx * scale_factor, y_min - dy * scale_factor, j, None)
     x_n1 = Vertex(x_max + dx * scale_factor, y_min - dy * scale_factor, j+1, None)

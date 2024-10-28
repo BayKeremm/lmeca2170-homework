@@ -71,10 +71,11 @@ class TriangularMesh:
 
         for he in to_remove:
             if he.opposite is not None:
+                #print("SPECIAL FLIP")
                 self.special_flip(he, boundary_vs)
 
-        if self.debug:
-            self.print_mesh("After special flip")
+        #if self.debug:
+            #self.print_mesh("After special flip")
 
 
         to_remove = []
@@ -165,7 +166,11 @@ class TriangularMesh:
         # Ensure this is a valid edge for flipping: v2 == v4 and v1 == v5
         assert (v_2 == v_4 and v_1 == v_5), "WARNING: Not a valid edge for edge_flip"
 
-        assert pr != v_6, "WARNING: pr =! v_6"
+        if pr == v_6:
+            # This is an insanly critical return, otherwise the code recursively goes crazy
+            # This is due to turning around the triangle to legalize edges
+            return False
+
         res = incircle(v_1.as_tuple(), v_2.as_tuple(), v_6.as_tuple(), v_3.as_tuple())
 
         if res >= 0 :
@@ -236,12 +241,15 @@ class TriangularMesh:
                 res = face.inside(vertex)
                 if res == True:
                     #print("Inside triangle")
+                    #print("We are inside: ", he.vertex.index, init_he_next.vertex.index,
+                          #init_he_next_next.vertex.index)
                     # inside the triangle
                     #STEP 1: draw edges from 3 corners to the new point
 
                     he = face.halfedge
                     init_he_next = he.next
                     init_he_next_next = init_he_next.next
+
                     assert init_he_next_next.next == he, print("Not a triangle homie")
                     he1 = Halfedge(vertex=(he.next.vertex),index=len(self.halfedges))
                     self.halfedges.append(he1)
@@ -305,13 +313,17 @@ class TriangularMesh:
 
                     #self.print_mesh("Before legalizing he")
                     self.legalize_edge(vertex, he)
+                    #print("1")
                     #self.print_mesh("Before legalizing init_he_next", highlight=init_he_next)
                     self.legalize_edge(vertex,init_he_next)
+                    #print("2")
                     #self.print_mesh("Before legalizing he next next ", highlight=init_he_next_next)
                     self.legalize_edge(vertex,init_he_next_next)
-                    #self.print_mesh("After legalizing")
-                    #print("Len faces after in triangle: ", len(self.faces))
+                    #print("3")
+                    #print("TRIS:---------------")
                     #self.print_tris()
+                    #self.print_mesh("BEFORE NEXT ITERATION inside face")
+                    #print("Len faces after in triangle: ", len(self.faces))
                     break
 
 
@@ -441,10 +453,10 @@ class TriangularMesh:
                     self.legalize_edge(vertex, edge_nn)
                     self.legalize_edge(vertex, edge_opp_n)
                     self.legalize_edge(vertex, edge_opp_nn)
-                    #print("after legalize")
                     #self.print_tris()
-                    #print("------------------")
-                    #self.print_mesh("Hmm")
+                    #print("--on edge----------------")
+                    #self.print_tris()
+                    #self.print_mesh("on edge")
                     
                     break
     def resethalfedges(self):
@@ -764,4 +776,23 @@ class TriangularMesh:
                     self.print_mesh("Hmm")
         
         
+        #print("v1 v2 v3:  ",v_1.index, v_2.index, v_3.index)
+        #print("v4 v5 v6:  ",v_4.index, v_5.index, v_6.index)
+        #if [v_1.index, v_2.index, v_3.index] == [1, 3, 0]:
+            #if [v_4.index, v_5.index, v_6.index] == [3, 1, 5]:
+                #print("WE BOUT TO GET ATTACKED")
+                #print(pr)
+                #print(pr.index)
+                #print(v_6)
+                #print(v_6.index)
+                #print(v_6 == pr)
+                #self.print_mesh("Inside EDGE FLIP")
+
+        #def wow():
+            #print(pr)
+            #print(pr.index)
+            #print(v_6)
+            #print(v_6.index)
+            #print(v_6 == pr)
+        #assert pr != v_6, wow()
         """

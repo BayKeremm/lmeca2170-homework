@@ -39,7 +39,7 @@ if not REMOVEINF:
     dx = (x_max - x_min)
     dy = (y_max - y_min)
 
-    scale_factor = 1000
+    scale_factor = 2000
 
     x_n = [x_min - dx * scale_factor, y_min - dy * scale_factor]
     x_n1 =[x_max + dx * scale_factor, y_min - dy * scale_factor]

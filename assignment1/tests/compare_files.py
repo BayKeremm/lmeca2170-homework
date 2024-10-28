@@ -21,6 +21,13 @@ def compare_triangles(file1, file2):
     triangles2 = read_triangles_from_file(file2)
 
     assert len(triangles1) == len(triangles2), "Do not match, different number of triangulations"
+    for t in triangles1:
+        if t not in triangles2:
+            print(t)
+    print("--------------")
+    for t in triangles2:
+        if t not in triangles1:
+            print(t)
     assert triangles1 == triangles2,  "Do not match, different triangles present"
     print("The same triangulation. Good! ")
 if len(sys.argv) != 3:
