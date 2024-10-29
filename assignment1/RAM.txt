@@ -2,6 +2,7 @@
 
 TODO: 
 
-Make the vertices unique, the same vertex should not be present in self.vertices
-
-manual addition instead of generate points initializeation 
+- Make the vertices unique, the same vertex should not be present in self.vertices
+    - test
+- Show convex hull
+- show voronoi cells 

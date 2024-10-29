@@ -624,6 +624,7 @@ class TriangularMesh:
             vertex = self.vertices[:-4][self.step]
             self.step +=1
         if vertex.done:
+            print("Alrady triangulated, going to next")
             return
         vertex.done = True
         for face in self.faces:
