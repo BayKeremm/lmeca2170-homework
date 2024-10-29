@@ -1,3 +1,7 @@
-Where we left off:
-- It seems that there is a last face connected to one of the manual vertices
-    - How is this possible ? 
+
+
+TODO: 
+
+Make the vertices unique, the same vertex should not be present in self.vertices
+
+manual addition instead of generate points initializeation 

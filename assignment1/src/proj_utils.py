@@ -1,3 +1,5 @@
+import numpy as np
+from halfedge import *
 class color:
    PURPLE = '\033[95m'
    CYAN = '\033[96m'
@@ -87,3 +89,11 @@ def print_usage():
         - {color.CYAN}./src/proj_utils.py{color.END} : Contains printing functions such as this output.
     
     """
+
+def points_to_vertices(pts):
+    vertices = []
+    j = 0
+    for pt in pts:
+        vertices.append(Vertex(float(pt[0]),float(pt[1]),j,None))
+        j +=1
+    return vertices

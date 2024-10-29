@@ -5,6 +5,7 @@ class Vertex:
         self.y = y
         self.index = index
         self.halfedge = halfedge
+        self.done = False
     def __str__(self):
         return f"Vertex({self.index}, x={self.x}, y={self.y})"
     def as_tuple(self):
