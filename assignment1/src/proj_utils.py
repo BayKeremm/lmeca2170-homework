@@ -104,19 +104,20 @@ def points_to_vertices(pts):
 
 
 def create_initial_triangulation(vertices=None, remove_inf=False, interactive=False):
+    # Initialize min and max bounds for x and y based on vertex coordinates
     if vertices is not None and not interactive:
         x_min = y_min = float('inf')
         x_max = y_max = float('-inf')
-
+        # Determine the bounding box of the input vertices
         for vertex in vertices:
             x_min = min(x_min, vertex.x)
             y_min = min(y_min, vertex.y)
             x_max = max(x_max, vertex.x)
             y_max = max(y_max, vertex.y)
-
+        # Calculate the width and height of the bounding box
         dx = (x_max - x_min)
         dy = (y_max - y_min)
-
+        # Set scale factor to define the size of the bounding box extension
         if remove_inf:
             scale_factor = 30000
         else:
@@ -130,20 +131,22 @@ def create_initial_triangulation(vertices=None, remove_inf=False, interactive=Fa
         x_min = y_min = -3000
         x_max = y_max = 3000
         j=0
+    
+    # Create vertices at infinity to form an initial super-rectangle covering all input points
     x_n = Vertex(x_min - dx *  scale_factor, y_min - dy * scale_factor, j, None)
     x_n1 = Vertex(x_max + dx * scale_factor, y_min - dy * scale_factor, j+1, None)
     x_n2 = Vertex(x_max + dx * scale_factor, y_max + dy * scale_factor, j+2, None)
     x_n3 = Vertex(x_min - dx * scale_factor, y_max + dy * scale_factor, j+3, None)
 
-
+    # Define half-edges to connect the vertices of the initial super-rectangle (divining it in two triangles)
     he1 = Halfedge(vertex=x_n, index=1)
     he2 = Halfedge(vertex=x_n2, index=2)
     he3 = Halfedge(vertex=x_n1, index=3)
     he4 = Halfedge(vertex=x_n2, index=4)
     he5 = Halfedge(vertex=x_n, index=5)
     he6 = Halfedge(vertex=x_n3, index=6)
-
-    he1.opposite = he4
+    # Set up half-edge relationships (opposites and next pointers)
+    he1.opposite = he4 #it's the diagonal of the super-rectangle (shared between the two triangles)
     he4.opposite = he1
     he1.next = he2
     he2.next = he3
@@ -152,7 +155,7 @@ def create_initial_triangulation(vertices=None, remove_inf=False, interactive=Fa
     he5.next = he6
     he6.next = he4
 
-    points_at_inf = [x_n, x_n1, x_n2, x_n3]
-    initial_hes = [he1, he2, he3, he4, he5, he6]
-    faces = [[he1,he2,he3],[he4,he5,he6]]
+    points_at_inf = [x_n, x_n1, x_n2, x_n3] #initial points
+    initial_hes = [he1, he2, he3, he4, he5, he6] #initial half-edges
+    faces = [[he1,he2,he3],[he4,he5,he6]] #initial faces
     return points_at_inf, initial_hes, faces

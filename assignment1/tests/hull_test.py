@@ -2,6 +2,7 @@ import numpy as np
 from scipy.spatial import ConvexHull
 import matplotlib.pyplot as plt
 
+# Open the points file and read the points
 fi = open("./pts.dat","r")
 
 lines = [i.strip("\n") for i in fi.readlines()]

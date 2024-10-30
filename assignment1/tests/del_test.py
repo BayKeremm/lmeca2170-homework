@@ -9,6 +9,7 @@ input_file = sys.argv[idx_input+1]
 idx_output = sys.argv.index("-o")
 output_file = sys.argv[idx_output+1]
 
+# Parse optional flags for DEBUG, REMOVEINF, and EXPORT, setting them as boolean values
 idx_deb = sys.argv.index("-DEBUG")
 DEBUG = int(sys.argv[idx_deb+1])
 
@@ -26,6 +27,7 @@ with open(input_file, "r") as fi:
 
 # Define boundary points and append the additional points
 if not REMOVEINF:
+    # Initialize min and max values for x and y to set a boundary around the points
     x_min = y_min = float('inf')
     x_max = y_max = float('-inf')
 
@@ -49,6 +51,7 @@ if not REMOVEINF:
 else:
     points_to_add = []
 
+# Append the points read from the input file to the points list
 points = []
 for pt in pts:
     l = pt.split()
