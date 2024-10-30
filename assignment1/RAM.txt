@@ -1,3 +1,6 @@
-Where we left off:
-- It seems that there is a last face connected to one of the manual vertices
-    - How is this possible ? 
+
+
+TODO: 
+
+Some numerical insanity encountered, remember that.
+

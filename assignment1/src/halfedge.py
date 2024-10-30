@@ -5,6 +5,7 @@ class Vertex:
         self.y = y
         self.index = index
         self.halfedge = halfedge
+        self.done = False
     def __str__(self):
         return f"Vertex({self.index}, x={self.x}, y={self.y})"
     def as_tuple(self):
@@ -35,6 +36,12 @@ class Face:
         r1 = orient2d((v1.x,v1.y),(v2.x,v2.y),(vertex.x,vertex.y))
         r2 = orient2d((v2.x,v2.y),(v3.x,v3.y),(vertex.x,vertex.y))
         r3 = orient2d((v3.x,v3.y),(v1.x,v1.y),(vertex.x,vertex.y))
+        #if r1 < 1e-12 and r1 > -1e-12:
+            #print(r1,r2,r3)
+        #if r2 < 1e-12 and r2 > -1e-12:
+            #print(r1,r2,r3)
+        #if r3 < 1e-12 and r3 > -1e-12:
+            #print(r1,r2,r3)
 
         # If all are the same sign, we are in the triangle
         if (r1 > 0 and r2 > 0 and r3 > 0) or (r1 < 0 and r2 < 0 and r3 < 0):

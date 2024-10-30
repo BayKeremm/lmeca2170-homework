@@ -1,3 +1,5 @@
+import numpy as np
+from halfedge import *
 class color:
    PURPLE = '\033[95m'
    CYAN = '\033[96m'
@@ -37,15 +39,17 @@ def print_usage():
         -REMOVEINF: {color.GREEN + color.UNDERLINE}(Optional){color.END} Removes the points at infinity (1 to enable, 0 is default)
         -EXPORT   : {color.GREEN + color.UNDERLINE}(Optional){color.END} Exports to the specified output file (1 to enable, 0 is default)
 
+        -{color.BOLD}INTER{color.END}    : {color.PURPLE + color.BOLD}Opens up an interactive window. Default is 0 and setting this flag to 1 disregards other flags.{color.END}
+
     {color.YELLOW+ color.BOLD + color.UNDERLINE}Example usage: {color.END}
-        {color.BOLD}
-        python ./src/delaunay.py -i pts.dat -o triangles.out -DEBUG 0 -REMOVEINF 1 -EXPORT 1
-        {color.END}
+        {color.BOLD}python ./src/delaunay.py -INTER 1{color.END}
+            - Opens up the interactive window.
+
+        {color.BOLD}python ./src/delaunay.py -i pts.dat -o triangles.out -DEBUG 0 -REMOVEINF 1 -EXPORT 1{color.END}
             - Reads points from "pts.dat" , triangulates, removes the points at infinity
                 and exports to "triangles.out".
-        {color.BOLD}
-        python ./src/delaunay.py -i pts.dat -o triangles.out -DEBUG 1 -REMOVEINF 0 -EXPORT 0
-        {color.END}
+
+        {color.BOLD}python ./src/delaunay.py -i pts.dat -o triangles.out -DEBUG 1 -REMOVEINF 0 -EXPORT 0{color.END}
             - Reads points from "pts.dat" , triangulates, keeps the points at infinity,
                 and shows the triangulation result
             {color.UNDERLINE}Note{color.END}: Adjust scale factor for points at infinity otherwise zooming in is necessary
@@ -57,8 +61,9 @@ def print_usage():
         {color.BOLD}sh run_debug.sh <POINT_FILE> {color.END}
             - Runs triangulation on both homework implementation and library and visualizes both. Useful for debugging.
                 
-        {color.BOLD}sh dragon_attack.sh {color.END}
+        {color.BOLD}sh dragon_attack.sh <1 or 0>{color.END}
             Stress test.
+            - Argument: 1 = remove points at infinity, 0 = keep the infinity points in the test.
             - removes pts.dat file
             - generates a new 1000 points pts.dat file
             - calls "sh run_test.sh pts.dat" and gets the output.
@@ -87,3 +92,67 @@ def print_usage():
         - {color.CYAN}./src/proj_utils.py{color.END} : Contains printing functions such as this output.
     
     """
+
+def points_to_vertices(pts):
+    vertices = []
+    j = 0
+    for pt in pts:
+        vertices.append(Vertex(float(pt[0]),float(pt[1]),j,None))
+        j +=1
+    return vertices
+
+
+
+def create_initial_triangulation(vertices=None, remove_inf=False, interactive=False):
+    if vertices is not None and not interactive:
+        x_min = y_min = float('inf')
+        x_max = y_max = float('-inf')
+
+        for vertex in vertices:
+            x_min = min(x_min, vertex.x)
+            y_min = min(y_min, vertex.y)
+            x_max = max(x_max, vertex.x)
+            y_max = max(y_max, vertex.y)
+
+        dx = (x_max - x_min)
+        dy = (y_max - y_min)
+
+        if remove_inf:
+            scale_factor = 30000
+        else:
+            scale_factor = 0.02
+
+        j = len(vertices)
+    else:
+        dx = 1
+        dy = 1
+        scale_factor = 0
+        x_min = y_min = -3000
+        x_max = y_max = 3000
+        j=0
+    x_n = Vertex(x_min - dx *  scale_factor, y_min - dy * scale_factor, j, None)
+    x_n1 = Vertex(x_max + dx * scale_factor, y_min - dy * scale_factor, j+1, None)
+    x_n2 = Vertex(x_max + dx * scale_factor, y_max + dy * scale_factor, j+2, None)
+    x_n3 = Vertex(x_min - dx * scale_factor, y_max + dy * scale_factor, j+3, None)
+
+
+    he1 = Halfedge(vertex=x_n, index=1)
+    he2 = Halfedge(vertex=x_n2, index=2)
+    he3 = Halfedge(vertex=x_n1, index=3)
+    he4 = Halfedge(vertex=x_n2, index=4)
+    he5 = Halfedge(vertex=x_n, index=5)
+    he6 = Halfedge(vertex=x_n3, index=6)
+
+    he1.opposite = he4
+    he4.opposite = he1
+    he1.next = he2
+    he2.next = he3
+    he3.next = he1
+    he4.next = he5 
+    he5.next = he6
+    he6.next = he4
+
+    points_at_inf = [x_n, x_n1, x_n2, x_n3]
+    initial_hes = [he1, he2, he3, he4, he5, he6]
+    faces = [[he1,he2,he3],[he4,he5,he6]]
+    return points_at_inf, initial_hes, faces

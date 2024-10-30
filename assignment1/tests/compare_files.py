@@ -5,22 +5,24 @@ def read_triangles_from_file(file_path):
     triangles = []
     
     with open(file_path, "r") as file:
+        i = 0
+        count = 0
         for line in file:
-            coords = line.strip().split()
-            p1 = [float(coords[0].strip("(,")),float(coords[1].strip(")"))]
-            p2 = [float(coords[2].strip("(,")),float(coords[3].strip(")"))]
-            p3 = [float(coords[4].strip("(,")),float(coords[5].strip(")"))]
-            triangle = [p1,p2,p3]
+            if i == 0:
+                count = int(line.strip())
+                i += 1
+                continue
+            indexes = line.strip().split()
+            triangle = [int(indexes[0]),int(indexes[1]),int(indexes[2])]
             triangles.append(sorted(triangle))
     
     triangles.sort()
-    return triangles
+    return triangles, count
 
 def compare_triangles(file1, file2):
-    triangles1 = read_triangles_from_file(file1)
-    triangles2 = read_triangles_from_file(file2)
+    triangles1, count1 = read_triangles_from_file(file1)
+    triangles2, count2 = read_triangles_from_file(file2)
 
-    assert len(triangles1) == len(triangles2), "Do not match, different number of triangulations"
     for t in triangles1:
         if t not in triangles2:
             print(t)
@@ -28,6 +30,10 @@ def compare_triangles(file1, file2):
     for t in triangles2:
         if t not in triangles1:
             print(t)
+    assert count1 == count2, "Different number of triangles start of the file"
+    assert count1 == len(triangles1), "file 1 is okay"
+    assert count2 == len(triangles2), "file 2 is okay"
+    assert len(triangles1) == len(triangles2), "Do not match, different number of triangulations"
     assert triangles1 == triangles2,  "Do not match, different triangles present"
     print("The same triangulation. Good! ")
 if len(sys.argv) != 3:
