@@ -2,7 +2,5 @@
 
 TODO: 
 
-- Make the vertices unique, the same vertex should not be present in self.vertices
-    - test
-- Show convex hull
-- show voronoi cells 
+Some numerical insanity encountered, remember that.
+

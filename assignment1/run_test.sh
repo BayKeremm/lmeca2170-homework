@@ -2,6 +2,7 @@
 
 # Get the input file from the command-line argument
 FILE=$1
+INF=$2
 
 # Remove triangles.Calc and triangles.True if they exist
 if [ -f triangles.Calc ]; then
@@ -13,10 +14,10 @@ if [ -f triangles.True ]; then
 fi
 
 # Run the Python scripts with the input file
-python ./src/delaunay.py -i "$FILE" -o triangles.Calc -DEBUG 0 -REMOVEINF 1 -EXPORT 1&
+python ./src/delaunay.py -i "$FILE" -o triangles.Calc -DEBUG 0 -REMOVEINF $INF -EXPORT 1&
 
 # Run the test script
-python tests/del_test.py -i "$FILE" -o triangles.True -DEBUG 0 -REMOVEINF 1 -EXPORT 1&
+python tests/del_test.py -i "$FILE" -o triangles.True -DEBUG 0 -REMOVEINF $INF -EXPORT 1&
 
 # Wait for both background processes to finish
 wait

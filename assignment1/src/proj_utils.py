@@ -39,15 +39,17 @@ def print_usage():
         -REMOVEINF: {color.GREEN + color.UNDERLINE}(Optional){color.END} Removes the points at infinity (1 to enable, 0 is default)
         -EXPORT   : {color.GREEN + color.UNDERLINE}(Optional){color.END} Exports to the specified output file (1 to enable, 0 is default)
 
+        -{color.BOLD}INTER{color.END}    : {color.PURPLE + color.BOLD}Opens up an interactive window. Default is 0 and setting this flag to 1 disregards other flags.{color.END}
+
     {color.YELLOW+ color.BOLD + color.UNDERLINE}Example usage: {color.END}
-        {color.BOLD}
-        python ./src/delaunay.py -i pts.dat -o triangles.out -DEBUG 0 -REMOVEINF 1 -EXPORT 1
-        {color.END}
+        {color.BOLD}python ./src/delaunay.py -INTER 1{color.END}
+            - Opens up the interactive window.
+
+        {color.BOLD}python ./src/delaunay.py -i pts.dat -o triangles.out -DEBUG 0 -REMOVEINF 1 -EXPORT 1{color.END}
             - Reads points from "pts.dat" , triangulates, removes the points at infinity
                 and exports to "triangles.out".
-        {color.BOLD}
-        python ./src/delaunay.py -i pts.dat -o triangles.out -DEBUG 1 -REMOVEINF 0 -EXPORT 0
-        {color.END}
+
+        {color.BOLD}python ./src/delaunay.py -i pts.dat -o triangles.out -DEBUG 1 -REMOVEINF 0 -EXPORT 0{color.END}
             - Reads points from "pts.dat" , triangulates, keeps the points at infinity,
                 and shows the triangulation result
             {color.UNDERLINE}Note{color.END}: Adjust scale factor for points at infinity otherwise zooming in is necessary
@@ -59,8 +61,9 @@ def print_usage():
         {color.BOLD}sh run_debug.sh <POINT_FILE> {color.END}
             - Runs triangulation on both homework implementation and library and visualizes both. Useful for debugging.
                 
-        {color.BOLD}sh dragon_attack.sh {color.END}
+        {color.BOLD}sh dragon_attack.sh <1 or 0>{color.END}
             Stress test.
+            - Argument: 1 = remove points at infinity, 0 = keep the infinity points in the test.
             - removes pts.dat file
             - generates a new 1000 points pts.dat file
             - calls "sh run_test.sh pts.dat" and gets the output.
@@ -100,8 +103,8 @@ def points_to_vertices(pts):
 
 
 
-def create_initial_triangulation(vertices=None):
-    if vertices is not None:
+def create_initial_triangulation(vertices=None, remove_inf=False, interactive=False):
+    if vertices is not None and not interactive:
         x_min = y_min = float('inf')
         x_max = y_max = float('-inf')
 
@@ -114,17 +117,20 @@ def create_initial_triangulation(vertices=None):
         dx = (x_max - x_min)
         dy = (y_max - y_min)
 
-        scale_factor = 2000
+        if remove_inf:
+            scale_factor = 30000
+        else:
+            scale_factor = 0.02
 
         j = len(vertices)
     else:
         dx = 1
         dy = 1
-        scale_factor = 2000
-        x_min = y_min = 0
-        x_max = y_max = 1
+        scale_factor = 0
+        x_min = y_min = -3000
+        x_max = y_max = 3000
         j=0
-    x_n = Vertex(x_min - dx * scale_factor, y_min - dy * scale_factor, j, None)
+    x_n = Vertex(x_min - dx *  scale_factor, y_min - dy * scale_factor, j, None)
     x_n1 = Vertex(x_max + dx * scale_factor, y_min - dy * scale_factor, j+1, None)
     x_n2 = Vertex(x_max + dx * scale_factor, y_max + dy * scale_factor, j+2, None)
     x_n3 = Vertex(x_min - dx * scale_factor, y_max + dy * scale_factor, j+3, None)

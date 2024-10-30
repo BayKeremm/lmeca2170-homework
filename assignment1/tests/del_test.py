@@ -39,24 +39,26 @@ if not REMOVEINF:
     dx = (x_max - x_min)
     dy = (y_max - y_min)
 
-    scale_factor = 2000
+    scale_factor = 0.02
 
     x_n = [x_min - dx * scale_factor, y_min - dy * scale_factor]
     x_n1 =[x_max + dx * scale_factor, y_min - dy * scale_factor]
     x_n2 =[x_max + dx * scale_factor, y_max + dy * scale_factor]
     x_n3 =[x_min - dx * scale_factor, y_max + dy * scale_factor]
-    points = [x_n, x_n1, x_n2, x_n3]
+    points_to_add = [x_n, x_n1, x_n2, x_n3]
 else:
-    points = []
+    points_to_add = []
 
+points = []
 for pt in pts:
     l = pt.split()
     points.append([float(l[0]), float(l[1])])
+# where you add them matters since the output is with indexes
+points.extend(points_to_add)
 
 # Perform Delaunay triangulation
 points = np.array(points)
 tri = Delaunay(points)
-
 
 if DEBUG:
     plt.triplot(points[:,0], points[:,1], tri.simplices, color='blue')
@@ -69,9 +71,11 @@ if DEBUG:
 elif EXPORT:
     # Open output file for writing triangles
     with open(output_file, "w") as fo:
+        fo.write(f"{len(tri.simplices)}" + "\n")
         for simplex in tri.simplices:
             # Retrieve the coordinates of each vertex of the triangle
-            triangle = [f"({points[vertex][0]}, {points[vertex][1]})" for vertex in simplex]
+            #print(simplex)
+            triangle = f"{simplex[0]} {simplex[1]} {simplex[2]}"
             # Write the triangle to the output file
-            fo.write(" ".join(triangle) + "\n")
+            fo.write(triangle + "\n")
     fo.close()

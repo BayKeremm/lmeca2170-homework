@@ -8,7 +8,7 @@ while true; do
   python3 ./src/genpts.py 1000 pts.dat
 
   # Run the test and capture the output
-  output=$(sh run_test.sh pts.dat)
+  output=$(sh run_test.sh pts.dat 1)
 
   # Check if the output contains the desired string
   if [[ "$output" != *"The same triangulation. Good!"* ]]; then

@@ -20,48 +20,103 @@ class TriangularMesh:
             t[1].face = f
             t[2].face = f
             j +=1
-    def export(self,file):
+    # Old exporting method
+    #def export(self,file):
+        #tris = []
+        #for face in self.faces:
+            #v1,v2,v3 = face.halfedge.vertex, face.halfedge.next.vertex, face.halfedge.next.next.vertex
+            #tris.append([v1.as_tuple(),v2.as_tuple(), v3.as_tuple()])
+        #for tri in tris:
+            #triangle = [f"({pt[0]}, {pt[1]})" for pt in tri]
+            ## Write the triangle to the output file
+            #file.write(" ".join(triangle) + "\n")
+    def export_homework(self,file):
         tris = []
         for face in self.faces:
-            v1,v2,v3 = face.halfedge.vertex, face.halfedge.next.vertex, face.halfedge.next.next.vertex
-            tris.append([v1.as_tuple(),v2.as_tuple(), v3.as_tuple()])
+            i1,i2,i3 = face.halfedge.vertex.index, face.halfedge.next.vertex.index, face.halfedge.next.next.vertex.index
+            tris.append([i1,i2,i3])
+        file.write(str(len(tris)) + "\n")
         for tri in tris:
-            triangle = [f"({pt[0]}, {pt[1]})" for pt in tri]
+            tri = sorted(tri)
+            triangle = f"{tri[0]} {tri[1]} {tri[2]}" 
             # Write the triangle to the output file
-            file.write(" ".join(triangle) + "\n")
+            file.write(triangle + "\n")
 
     def compute_convex_hull(self):
-        x_sorted = sorted(self.vertices, key=lambda v: v.x)
+        #print("-----------------")
+        #for i in self.vertices:
+            #print(i)
+        #print("-----------------")
+        inside_vertices =  self.vertices[:-4]
+        #print("Vertices: ", [v.index for v in inside_vertices])
+        #print("Faces: ", [[f.halfedge.vertex.index,
+                           #f.halfedge.next.vertex.index,
+                           #f.halfedge.next.next.vertex.index] for f in self.faces])
+        x_sorted = sorted(inside_vertices, key=lambda v: v.x)
 
         L_upper = []
         L_upper.append(x_sorted[0])
         L_upper.append(x_sorted[1])
 
-        for i in range(2,len(self.vertices)):
+        for i in range(2,len(inside_vertices)):
             L_upper.append(x_sorted[i])
-            while len(L_upper) > 2 and orient2d(L_upper[-3].as_tuple(),L_upper[-2].as_tuple(),L_upper[-1].as_tuple()) >0:
+            while len(L_upper) > 2 and orient2d(L_upper[-3].as_tuple(),
+                                                L_upper[-2].as_tuple(),
+                                                L_upper[-1].as_tuple()) >0:
                 L_upper.remove(L_upper[-2])
         L_lower = []
         L_lower.append(x_sorted[-1])
         L_lower.append(x_sorted[-2])
 
-        for j in reversed(range(0,len(self.vertices)-2)):
+        for j in reversed(range(0,len(inside_vertices)-2)):
             L_lower.append(x_sorted[j])
-            while len(L_lower) > 2 and orient2d(L_lower[-3].as_tuple(),L_lower[-2].as_tuple(),L_lower[-1].as_tuple()) >0:
+            while len(L_lower) > 2 and orient2d(L_lower[-3].as_tuple(),
+                                                L_lower[-2].as_tuple(),
+                                                L_lower[-1].as_tuple()) >0:
                 L_lower.remove(L_lower[-2])
         
         L_lower.remove(L_lower[0])
         L_lower.remove(L_lower[-1])
 
         self.convexhullvertices = L_upper + L_lower
+        return L_upper + L_lower
+    def get_dual_voronoi(self):
+        def compute_circumcenter(vertex1, vertex2, vertex3):
+            x1, y1 = vertex1.x, vertex1.y
+            x2, y2 = vertex2.x, vertex2.y
+            x3, y3 = vertex3.x, vertex3.y
+
+            # Calculate the circumcenter using perpendicular bisectors
+            d = 2 * (x1 * (y2 - y3) + x2 * (y3 - y1) + x3 * (y1 - y2))
+            ux = ((x1**2 + y1**2) * (y2 - y3) + (x2**2 + y2**2) * (y3 - y1) + (x3**2 + y3**2) * (y1 - y2)) / d
+            uy = ((x1**2 + y1**2) * (x3 - x2) + (x2**2 + y2**2) * (x1 - x3) + (x3**2 + y3**2) * (x2 - x1)) / d
+            return ux, uy
+
+        centers = []
+        circumcenters = {}
+        for face in self.faces:
+            he = face.halfedge
+
+            # Get the three vertices of the triangle for the current face
+            vertex1 = he.vertex
+            vertex2 = he.next.vertex
+            vertex3 = he.next.next.vertex
+
+            # Compute the circumcenter of the triangle
+            circumcenter_x, circumcenter_y = compute_circumcenter(vertex1, vertex2, vertex3)
+
+            circumcenters[face] = (circumcenter_x, circumcenter_y)
+            centers.append([circumcenter_x, circumcenter_y])
+        return centers, circumcenters 
     def handle_boundaries(self, boundary_hes, boundary_vs):
         for he in boundary_hes:
             self.faces.remove(he.face)
             self.halfedges.remove(he)
             self.halfedges.remove(he.next)
+            self.halfedges.remove(he.next.next)
+
             if he.next.opposite is not None:
                 he.next.opposite.opposite = None
-            self.halfedges.remove(he.next.next)
             if he.next.next.opposite is not None:
                 he.next.next.opposite.opposite = None
         
@@ -110,8 +165,8 @@ class TriangularMesh:
 
         # If v_3 v_2 v_6 make a left hand turn flip
         res = orient2d(v_3.as_tuple(), v_2.as_tuple(), v_6.as_tuple())
-
         if res > 0:
+            print("FLIP FLIP SPECIAL")
             # Step 1: Cache the `next` pointers before modifying them
             he_next = he.next
             he_next_next = he.next.next
@@ -163,14 +218,64 @@ class TriangularMesh:
         # Ensure this is a valid edge for flipping: v2 == v4 and v1 == v5
         assert (v_2 == v_4 and v_1 == v_5), "WARNING: Not a valid edge for edge_flip"
 
+        res = incircle(v_1.as_tuple(), v_2.as_tuple(), v_6.as_tuple(), v_3.as_tuple())
+        res_x = incircle(v_1.as_tuple(), v_2.as_tuple(), v_3.as_tuple(), v_6.as_tuple())
+
         if pr == v_6:
+            print("---------------")
+            print("This is a haunt")
+            print(res)
+            print(res_x)
+            print("---------------")
             # This is an insanly critical return, otherwise the code recursively goes crazy
             # This is due to turning around the triangle to legalize edges
+            #if res_x < 1e-12  :
+                ## Step 1: Cache the `next` pointers before modifying them
+                #he_next = he.next
+                #he_next_next = he.next.next
+                #op_he_next = he.opposite.next
+                #op_he_next_next = he.opposite.next.next
+
+                ## Step 2: Reassign vertices for the halfedges
+                #he.vertex = v_6
+                #he.opposite.vertex = v_3
+
+                ## Step 3: Update the `next` pointers to reflect the new edge structure
+                ## Triangle 1 (around he)
+                #he.next = he_next_next  
+                #he.next.next = op_he_next  
+                #he.next.next.next = he
+
+                ## Triangle 2 (around he.opposite)
+                #he.opposite.next = op_he_next_next  
+                #he.opposite.next.next = he_next  
+                #he.opposite.next.next.next = he.opposite
+
+                ## Step 4: Update faces
+                #self.faces.remove(he.face)
+                #self.faces.remove(he.opposite.face)
+                #f1 = Face(len(self.faces),he)
+                #self.faces.append(f1)
+                #he.face = f1
+                #f2 = Face(len(self.faces),he.opposite)
+                #self.faces.append(f2)
+                #he.opposite.face = f2
+
+                #he.next.face = he.face
+                #he.next.next.face = he.face
+
+                #he.opposite.next.face = he.opposite.face
+                #he.opposite.next.next.face = he.opposite.face
+
             return False
 
-        res = incircle(v_1.as_tuple(), v_2.as_tuple(), v_6.as_tuple(), v_3.as_tuple())
 
-        if res >= 0 :
+        #if sorted([v_1.index, v_2.index,v_3.index]) == [449,751,935] and sorted([v_1.index, v_2.index,v_6.index]) == [312,751,935]:
+            #print("ha")
+            #print(res)
+            #print(res_x)
+
+        if res > 0  :
             # Step 1: Cache the `next` pointers before modifying them
             he_next = he.next
             he_next_next = he.next.next
@@ -220,6 +325,8 @@ class TriangularMesh:
         op_n = he.opposite.next
         op_nn = he.opposite.next.next
         if self.edge_flip(he, pr):
+            #for h in self.halfedges:
+                #self.legalize_edge(pr, h) 
             self.legalize_edge(pr, he_next) 
             self.legalize_edge(pr, he_next_next) 
             self.legalize_edge(pr, op) 
@@ -342,6 +449,11 @@ class TriangularMesh:
                     #print("r1: ", v1.index, v2.index , r1)
                     #print("r2: ", v2.index, v3.index, r2)
                     #print("r3: ", v3.index, v1.index, r3)
+
+                    # this means that it is already a vertex we do not need to add it again.
+                    if (r1 == 0 and r2 == 0) or (r2 == 0 and r3 == 0) or (r3 == 0 and r1 == 0):
+                        break
+
                     edge = None
                     if r1 == 0:
                         edge = he1
@@ -454,7 +566,6 @@ class TriangularMesh:
                     #print("--on edge----------------")
                     #self.print_tris()
                     #self.print_mesh("on edge")
-                    
                     break
     def resethalfedges(self):
         for he in self.halfedges:
@@ -487,12 +598,13 @@ class TriangularMesh:
         plt.scatter(x, y, color='blue')
         for v in self.vertices:
             plt.text(v.x, v.y, str(v.index), fontsize=12, color='red', ha='center', va='center')
-
+        i = 1
         # Plot faces and halfedges
         for face in self.faces:
             he = face.halfedge
             triangle_x = []
             triangle_y = []
+            indexes = []
             start_he = he
 
             while True:
@@ -500,6 +612,7 @@ class TriangularMesh:
                 next_vertex = he.next.vertex
                 triangle_x.append(vertex.x)
                 triangle_y.append(vertex.y)
+                indexes.append(vertex.index)
 
                 midpoint_x = (vertex.x + next_vertex.x) / 2
                 midpoint_y = (vertex.y + next_vertex.y) / 2
@@ -532,7 +645,14 @@ class TriangularMesh:
             # Close the triangle by adding the first point again
             triangle_x.append(triangle_x[0])
             triangle_y.append(triangle_y[0])
-            plt.plot(triangle_x, triangle_y, color='black')
+            if i < 2:
+                print(indexes)
+                i +=1
+            if indexes == [312, 449, 751] or indexes == [312, 449, 935]:
+                print("YES------------------")
+                plt.plot(triangle_x, triangle_y, color='blue')
+            else:
+                plt.plot(triangle_x, triangle_y, color='black')
 
         # Plot configuration
         plt.xlabel('x')
@@ -541,79 +661,14 @@ class TriangularMesh:
         plt.grid(True)
         plt.show()
         self.resethalfedges()
-    def print_boundary(self):
-        x = [v.x for v in self.vertices]
-        y = [v.y for v in self.vertices]
-        
-        # Plot vertices
-        plt.scatter(x, y, color='blue')
+    def check_exists(self, vertex):
         for v in self.vertices:
-            plt.text(v.x, v.y, str(v.index), fontsize=12, color='red', ha='center', va='center')
-
-        # Plot faces and halfedges
-        for face in self.faces:
-            he = face.halfedge
-            triangle_x = []
-            triangle_y = []
-            start_he = he
-
-            while True:
-                vertex = he.vertex
-                next_vertex = he.next.vertex
-                triangle_x.append(vertex.x)
-                triangle_y.append(vertex.y)
-
-                midpoint_x = (vertex.x + next_vertex.x) / 2
-                midpoint_y = (vertex.y + next_vertex.y) / 2
-
-                if he.visited:
-                    he = he.next
-                    if he == start_he:
-                        break
-                    continue
-
-                if he.opposite is None:
-                    pass
-                    #plt.text(midpoint_x, midpoint_y, f"he{he.index}\n→he{he.next.index}",
-                            #fontsize=8, color='orange', ha='center')
-                else:
-                    he.opposite.visited = True
-                    #plt.text(midpoint_x -0.2, midpoint_y -0.2, f"he{he.index}\n→he{he.next.index}",
-                            #fontsize=8, color='purple', ha='center')
-                    #plt.text(midpoint_x , midpoint_y, f"he{he.opposite.index}\n→he{he.opposite.next.index}",
-                            #fontsize=8, color='purple', ha='center')
-
-                he.visited = True
-
-
-
-                he = he.next
-                if he == start_he:
-                    break
-
-            # Close the triangle by adding the first point again
-            triangle_x.append(triangle_x[0])
-            triangle_y.append(triangle_y[0])
-            plt.plot(triangle_x, triangle_y, color='black')
-
-        to_plot = []
-        for he in self.halfedges:
-            if he.opposite is None:
-                to_plot.append(he)
-        
-        xs = [h.vertex.x for h in to_plot]
-        ys = [h.vertex.y for h in to_plot]
-
-        plt.scatter(xs, ys, color='orange')
-
-        plt.title("Boundary")
-        plt.xlabel("x")
-        plt.ylabel("y")
-        plt.show()
-
+            if v.x == vertex.x and v.y == vertex.y:
+                return True
+        return False
     def triangulate_one_step(self, new_vertex=None):
         # Since last 4 we have manually triangulated
-        if new_vertex:
+        if new_vertex is not None:
             vertex = new_vertex
             self.vertices.insert(-4, vertex)
         else:
@@ -623,6 +678,7 @@ class TriangularMesh:
                 return
             vertex = self.vertices[:-4][self.step]
             self.step +=1
+
         if vertex.done:
             print("Alrady triangulated, going to next")
             return
@@ -737,6 +793,11 @@ class TriangularMesh:
                 print("r3: ", v3.index, v1.index, r3)
                 print("vertex: ", vertex)
                 edge = None
+
+                # this means that it is already a vertex we do not need to add it again.
+                if (r1 == 0 and r2 == 0) or (r2 == 0 and r3 == 0) or (r3 == 0 and r1 == 0):
+                    return
+
                 if r1 == 0:
                     edge = he1
                 elif r2 == 0:
