@@ -42,6 +42,9 @@ def print_usage():
         -{color.BOLD}INTER{color.END}    : {color.PURPLE + color.BOLD}Opens up an interactive window. Default is 0 and setting this flag to 1 disregards other flags.{color.END}
 
     {color.YELLOW+ color.BOLD + color.UNDERLINE}Example usage: {color.END}
+        {color.BOLD}python ./src/genpts.py 100 pts.dat{color.END}
+            - Generates 100 random points and puts it in pts.dat file.
+
         {color.BOLD}python ./src/delaunay.py -INTER 1{color.END}
             - Opens up the interactive window.
 

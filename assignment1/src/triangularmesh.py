@@ -187,7 +187,7 @@ class TriangularMesh:
         # If v_3 v_2 v_6 make a left hand turn flip (reconfiguration is needed)
         res = orient2d(v_3.as_tuple(), v_2.as_tuple(), v_6.as_tuple())
         if res > 0:
-            print("FLIP FLIP SPECIAL")
+            #print("FLIP FLIP SPECIAL")
             # Step 1: Cache the `next` pointers before modifying them
             he_next = he.next
             he_next_next = he.next.next
@@ -242,58 +242,10 @@ class TriangularMesh:
         res_x = incircle(v_1.as_tuple(), v_2.as_tuple(), v_3.as_tuple(), v_6.as_tuple())
 
         if pr == v_6:
-            print("---------------")
-            print("This is a haunt")
-            print(res)
-            print(res_x)
-            print("---------------")
             # This is an insanly critical return, otherwise the code recursively goes crazy
-            # This is due to turning around the triangle to legalize edges
-            #if res_x < 1e-12  :
-                ## Step 1: Cache the `next` pointers before modifying them
-                #he_next = he.next
-                #he_next_next = he.next.next
-                #op_he_next = he.opposite.next
-                #op_he_next_next = he.opposite.next.next
-
-                ## Step 2: Reassign vertices for the halfedges
-                #he.vertex = v_6
-                #he.opposite.vertex = v_3
-
-                ## Step 3: Update the `next` pointers to reflect the new edge structure
-                ## Triangle 1 (around he)
-                #he.next = he_next_next  
-                #he.next.next = op_he_next  
-                #he.next.next.next = he
-
-                ## Triangle 2 (around he.opposite)
-                #he.opposite.next = op_he_next_next  
-                #he.opposite.next.next = he_next  
-                #he.opposite.next.next.next = he.opposite
-
-                ## Step 4: Update faces
-                #self.faces.remove(he.face)
-                #self.faces.remove(he.opposite.face)
-                #f1 = Face(len(self.faces),he)
-                #self.faces.append(f1)
-                #he.face = f1
-                #f2 = Face(len(self.faces),he.opposite)
-                #self.faces.append(f2)
-                #he.opposite.face = f2
-
-                #he.next.face = he.face
-                #he.next.next.face = he.face
-
-                #he.opposite.next.face = he.opposite.face
-                #he.opposite.next.next.face = he.opposite.face
-
+            # This is due to turning around the triangle to legalize edges and not terminating
             return False
 
-
-        #if sorted([v_1.index, v_2.index,v_3.index]) == [449,751,935] and sorted([v_1.index, v_2.index,v_6.index]) == [312,751,935]:
-            #print("ha")
-            #print(res)
-            #print(res_x)
 
         if res > 0  :
             # Step 1: Cache the `next` pointers before modifying them
@@ -347,8 +299,6 @@ class TriangularMesh:
         op_n = he.opposite.next #next half-edge in the opposite triangle
         op_nn = he.opposite.next.next
         if self.edge_flip(he, pr):
-            #for h in self.halfedges:
-                #self.legalize_edge(pr, h) 
              # If the edge is flipped, recursively call `legalize_edge` on all surrounding half-edges
              # to ensure each triangle in the area adheres to Delaunay conditions
             self.legalize_edge(pr, he_next) 
@@ -369,11 +319,8 @@ class TriangularMesh:
             # Check each face (triangle) to see if the vertex is inside or on an edge
             for face in self.faces:
                 res = face.inside(vertex)
-                if res == True:
-                    #print("Inside triangle")
-                    #print("We are inside: ", he.vertex.index, init_he_next.vertex.index,
-                          #init_he_next_next.vertex.index)
-                    # inside the triangle
+                if res == True:     # inside the triangle
+
                     #STEP 1: draw edges from 3 corners to the new point
 
                     he = face.halfedge
@@ -460,7 +407,7 @@ class TriangularMesh:
 
                 elif res == -1:
                     # on the triangle
-                    print("AAAAAAAAAAAAAAAAAAAAAAA")
+                    #print("AAAAAAAAAAAAAAAAAAAAAAA")
                     he1 = face.halfedge
                     he2 = he1.next 
                     he3 = he2.next 
