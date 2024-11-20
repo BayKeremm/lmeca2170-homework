@@ -15,4 +15,4 @@ https://github.com/user-attachments/assets/84913d85-da34-443b-94af-8b3e8daf9ff1
 
 
 ## Homework2: Spatial Data Structures
-
+Deadline 20 December. The code will be public at that date.
