@@ -1,0 +1,8 @@
+"filename", "language", "Shell Script", "Python", "comment", "blank", "total"
+"/Users/keremokyay/cs-master/year2/lmeca2170/lmeca2170-homework/DelaunayTriangulation/dragon_attack.sh", "Shell Script", -13, 0, -6, -5, -24
+"/Users/keremokyay/cs-master/year2/lmeca2170/lmeca2170-homework/DelaunayTriangulation/run_debug.sh", "Shell Script", -5, 0, -5, -6, -16
+"/Users/keremokyay/cs-master/year2/lmeca2170/lmeca2170-homework/DelaunayTriangulation/run_test.sh", "Shell Script", -12, 0, -7, -7, -26
+"/Users/keremokyay/cs-master/year2/lmeca2170/lmeca2170-homework/DelaunayTriangulation/tests/compare_files.py", "Python", 0, -48, -4, -7, -59
+"/Users/keremokyay/cs-master/year2/lmeca2170/lmeca2170-homework/DelaunayTriangulation/tests/del_test.py", "Python", 0, -59, -12, -13, -84
+"/Users/keremokyay/cs-master/year2/lmeca2170/lmeca2170-homework/DelaunayTriangulation/tests/hull_test.py", "Python", 0, -22, -3, -5, -30
+"Total", "-", -30, -129, -37, -43, -239

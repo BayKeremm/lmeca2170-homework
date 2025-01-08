@@ -15,4 +15,11 @@ https://github.com/user-attachments/assets/84913d85-da34-443b-94af-8b3e8daf9ff1
 
 
 ## Homework2: Spatial Data Structures
+- Implementation of AABB tree
+- Small optimizations with numba
+To speed up rigid body simulation
+
+## Homework3: Surface Reconstruction from Point Clouds
+The goal is to implement a point cloud processing pipeline to reconstruct some surface
+meshes from raw data.
 
