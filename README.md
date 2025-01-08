@@ -19,7 +19,11 @@ https://github.com/user-attachments/assets/84913d85-da34-443b-94af-8b3e8daf9ff1
 - Small optimizations with numba
 To speed up rigid body simulation
 
-![alt text](./images/sim.png)
+
+
+https://github.com/user-attachments/assets/914da2a9-bfa4-4264-89a4-71d51db0d5c4
+
+
 
 Graded: 14.5/15 
 
