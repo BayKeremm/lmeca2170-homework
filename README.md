@@ -9,7 +9,7 @@ python ./src/delaunay.py
 
 It explains the program.
 
-Graded 20/20
+Graded: 20/20
 
 https://github.com/user-attachments/assets/84913d85-da34-443b-94af-8b3e8daf9ff1
 
@@ -19,7 +19,12 @@ https://github.com/user-attachments/assets/84913d85-da34-443b-94af-8b3e8daf9ff1
 - Small optimizations with numba
 To speed up rigid body simulation
 
+![alt text](./images/image.png)
+
+Graded: 14.5/15 
+
 ## Homework3: Surface Reconstruction from Point Clouds
 The goal is to implement a point cloud processing pipeline to reconstruct some surface
 meshes from raw data.
 
+10th Jan
